@@ -1,1 +1,1612 @@
-uploading
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Nexus v2 — Intelligence-First ATS/CRM</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;500;600;700;800;900&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+
+:root {
+  --bg:#070910;
+  --s1:#0d0f17;
+  --s2:#131620;
+  --s3:#1a1e2e;
+  --border:#1f2438;
+  --border2:#252c42;
+  --a1:#4f7cff;
+  --a2:#00d4a8;
+  --a3:#ff6b35;
+  --a4:#b06aff;
+  --warn:#f5a623;
+  --danger:#ff4560;
+  --text:#dde2f5;
+  --muted:#5a6385;
+  --muted2:#8892b0;
+  --r:10px;
+  --r2:14px;
+  --sw:240px;
+  --hh:56px;
+  --font:'Instrument Sans',sans-serif;
+  --display:'Cabinet Grotesk',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;overflow:hidden}
+/* ── noise overlay ── */
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:.4}
+
+/* ═══ SIDEBAR ═══ */
+.sidebar{width:var(--sw);min-height:100vh;background:var(--s1);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto;scrollbar-width:none}
+.sidebar::-webkit-scrollbar{display:none}
+.logo{padding:18px 16px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.logo-mark{width:32px;height:32px;background:linear-gradient(135deg,var(--a1),var(--a2));border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:900;font-size:15px;color:#fff;flex-shrink:0}
+.logo-text{font-family:var(--display);font-weight:800;font-size:17px;letter-spacing:-.3px}
+.logo-text em{color:var(--a1);font-style:normal}
+.logo-badge{margin-left:auto;background:rgba(79,124,255,.15);border:1px solid rgba(79,124,255,.25);color:var(--a1);font-size:9px;font-weight:700;border-radius:20px;padding:2px 7px;letter-spacing:.5px}
+nav{padding:10px 8px;flex:1}
+.nav-sec{margin-bottom:18px}
+.nav-lbl{font-size:9.5px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);padding:5px 10px 3px}
+.ni{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;color:var(--muted2);transition:all .15s;position:relative;user-select:none;white-space:nowrap}
+.ni:hover{background:var(--s2);color:var(--text)}
+.ni.active{background:rgba(79,124,255,.12);color:var(--a1)}
+.ni.active::before{content:'';position:absolute;left:0;top:25%;bottom:25%;width:2.5px;background:var(--a1);border-radius:4px}
+.ni-ic{width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.ni-badge{margin-left:auto;background:var(--a1);color:#fff;font-size:9px;font-weight:800;border-radius:20px;padding:1px 6px}
+.ni-badge.r{background:var(--danger)}
+.ni-badge.y{background:var(--warn);color:#000}
+.ni-badge.g{background:var(--a2);color:#000}
+.sidebar-footer{padding:12px 12px 16px;border-top:1px solid var(--border);flex-shrink:0}
+.user-row{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:9px;background:var(--s2);cursor:pointer;transition:background .15s}
+.user-row:hover{background:var(--s3)}
+.av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
+.user-info{flex:1;min-width:0}
+.user-name{font-size:12.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis}
+.user-role{font-size:10.5px;color:var(--muted)}
+.online-dot{width:7px;height:7px;border-radius:50%;background:var(--a2);flex-shrink:0}
+
+/* ═══ MAIN ═══ */
+.main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;min-height:100vh;overflow:hidden}
+.topbar{height:var(--hh);background:var(--s1);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 22px;gap:14px;position:sticky;top:0;z-index:50;flex-shrink:0}
+.page-title{font-family:var(--display);font-size:17px;font-weight:800;flex:1;letter-spacing:-.2px}
+.topbar-actions{display:flex;gap:8px;align-items:center}
+.search-wrap{display:flex;align-items:center;gap:7px;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:6px 11px;width:220px;transition:border-color .15s}
+.search-wrap:focus-within{border-color:var(--a1)}
+.search-wrap input{border:none;background:transparent;font-family:var(--font);font-size:12.5px;color:var(--text);outline:none;flex:1}
+.search-wrap input::placeholder{color:var(--muted)}
+.icon-btn{width:30px;height:30px;border-radius:7px;background:var(--s2);border:1px solid var(--border);color:var(--muted2);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;position:relative}
+.icon-btn:hover{border-color:var(--a1);color:var(--a1)}
+.notif-dot{position:absolute;top:-2px;right:-2px;width:8px;height:8px;border-radius:50%;background:var(--danger);border:1.5px solid var(--s1)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 15px;border-radius:8px;font-family:var(--font);font-size:12.5px;font-weight:600;cursor:pointer;border:none;transition:all .15s;white-space:nowrap}
+.btn-p{background:linear-gradient(135deg,var(--a1),#2f5ce8);color:#fff;box-shadow:0 2px 12px rgba(79,124,255,.3)}
+.btn-p:hover{box-shadow:0 4px 20px rgba(79,124,255,.45);transform:translateY(-1px)}
+.btn-g{background:var(--s2);color:var(--text);border:1px solid var(--border)}
+.btn-g:hover{border-color:var(--a1);color:var(--a1)}
+.btn-sm{padding:5px 11px;font-size:12px}
+.btn-xs{padding:3px 9px;font-size:11px}
+.btn-danger{background:rgba(255,69,96,.12);color:var(--danger);border:1px solid rgba(255,69,96,.2)}
+
+/* ═══ CONTENT ═══ */
+.content{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.content::-webkit-scrollbar{width:5px}
+.content::-webkit-scrollbar-thumb{background:var(--border);border-radius:5px}
+.page{display:none;padding:22px}
+.page.active{display:block;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* ═══ CARDS ═══ */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden}
+.card:hover{border-color:var(--border2)}
+.ch{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border)}
+.ch-title{font-family:var(--display);font-size:13.5px;font-weight:700;flex:1}
+.cb{padding:14px 18px}
+
+/* ═══ STAT CARDS ═══ */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.scard{background:var(--s1);border:1px solid var(--border);border-radius:var(--r2);padding:16px 18px;position:relative;overflow:hidden;transition:border-color .2s,transform .15s}
+.scard:hover{border-color:var(--border2);transform:translateY(-1px)}
+.scard::after{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.scard.b::after{background:linear-gradient(90deg,var(--a1),#7fa8ff)}
+.scard.g::after{background:linear-gradient(90deg,var(--a2),#00ffcc)}
+.scard.o::after{background:linear-gradient(90deg,var(--a3),#ffb347)}
+.scard.p::after{background:linear-gradient(90deg,var(--a4),#e040fb)}
+.scard.r::after{background:linear-gradient(90deg,var(--danger),#ff8a65)}
+.s-lbl{font-size:11px;color:var(--muted);font-weight:600;margin-bottom:6px;letter-spacing:.3px}
+.s-val{font-family:var(--display);font-size:26px;font-weight:800;line-height:1;margin-bottom:5px;letter-spacing:-.5px}
+.s-sub{font-size:11px;color:var(--muted)}
+.up{color:var(--a2)}.down{color:var(--danger)}
+.scard .bg-icon{position:absolute;right:-4px;bottom:-8px;font-size:52px;opacity:.04}
+
+/* ═══ TAGS & PILLS ═══ */
+.tag{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;letter-spacing:.2px;gap:3px}
+.t-tech{background:rgba(79,124,255,.14);color:#8ab0ff}
+.t-type{background:rgba(0,212,168,.12);color:var(--a2)}
+.t-hot{background:rgba(245,166,35,.12);color:var(--warn)}
+.t-urg{background:rgba(255,69,96,.12);color:var(--danger)}
+.t-p{background:rgba(176,106,255,.13);color:var(--a4)}
+.t-new{background:rgba(79,124,255,.1);color:var(--a1)}
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:20px}
+.pill::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.7}
+.p-active{background:rgba(0,212,168,.1);color:var(--a2)}
+.p-prospect{background:rgba(79,124,255,.1);color:#8ab0ff}
+.p-screen{background:rgba(79,124,255,.12);color:#8ab0ff}
+.p-interview{background:rgba(245,166,35,.1);color:var(--warn)}
+.p-offer{background:rgba(0,212,168,.1);color:var(--a2)}
+.p-placed{background:rgba(176,106,255,.12);color:var(--a4)}
+.p-onhold{background:rgba(255,69,96,.1);color:var(--danger)}
+.p-closed{background:rgba(90,99,133,.15);color:var(--muted)}
+.p-won{background:rgba(0,212,168,.1);color:var(--a2)}
+.p-lost{background:rgba(255,69,96,.1);color:var(--danger)}
+.p-neg{background:rgba(245,166,35,.1);color:var(--warn)}
+.p-lead{background:rgba(176,106,255,.1);color:var(--a4)}
+
+/* ═══ AI SCORE BADGE ═══ */
+.ai-score{display:inline-flex;align-items:center;gap:5px;background:rgba(0,212,168,.1);border:1px solid rgba(0,212,168,.2);border-radius:20px;padding:2px 9px;font-size:11px;font-weight:700;color:var(--a2)}
+.ai-score.high{background:rgba(0,212,168,.12);border-color:rgba(0,212,168,.25);color:var(--a2)}
+.ai-score.med{background:rgba(245,166,35,.1);border-color:rgba(245,166,35,.2);color:var(--warn)}
+.ai-score.low{background:rgba(255,69,96,.08);border-color:rgba(255,69,96,.15);color:var(--danger)}
+.score-ring{width:36px;height:36px;position:relative;flex-shrink:0}
+.score-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.score-ring .score-val{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;font-family:var(--display)}
+
+/* ═══ TABLE ═══ */
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead th{text-align:left;padding:9px 14px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap;background:var(--s1)}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:rgba(255,255,255,.018)}
+td{padding:11px 14px;vertical-align:middle}
+.td-name{font-weight:600;font-size:13px}
+.td-m{color:var(--muted);font-size:11.5px}
+.td-a{color:var(--a1);font-weight:600}
+.td-g{color:var(--a2);font-weight:600}
+
+/* ═══ KANBAN ═══ */
+.kb-wrap{display:flex;gap:14px;overflow-x:auto;padding-bottom:14px;align-items:flex-start}
+.kb-wrap::-webkit-scrollbar{height:5px}
+.kb-wrap::-webkit-scrollbar-thumb{background:var(--border);border-radius:5px}
+.kb-col{min-width:262px;width:262px;background:var(--s1);border:1px solid var(--border);border-radius:var(--r2);display:flex;flex-direction:column;max-height:calc(100vh - 170px);transition:border-color .15s}
+.kb-col.drag-over{border-color:var(--a1);background:rgba(79,124,255,.03)}
+.col-hd{display:flex;align-items:center;gap:7px;padding:12px 13px 10px;border-bottom:1px solid var(--border);position:sticky;top:0;background:inherit;border-radius:var(--r2) var(--r2) 0 0;flex-shrink:0}
+.col-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.col-nm{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;flex:1}
+.col-ct{background:var(--s2);border-radius:20px;font-size:10px;font-weight:800;padding:1px 7px;color:var(--muted)}
+.col-cards{flex:1;overflow-y:auto;padding:8px 9px;display:flex;flex-direction:column;gap:7px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.col-cards::-webkit-scrollbar{width:3px}
+.k-card{background:var(--s2);border:1px solid var(--border);border-radius:9px;padding:11px 12px;cursor:grab;transition:border-color .15s,transform .1s,box-shadow .15s;user-select:none}
+.k-card:hover{border-color:var(--a1);box-shadow:0 4px 18px rgba(79,124,255,.1);transform:translateY(-1px)}
+.k-card.dragging{opacity:.45;transform:scale(.96);cursor:grabbing}
+.kc-top{display:flex;align-items:flex-start;gap:8px;margin-bottom:7px}
+.kc-av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;flex-shrink:0;color:#fff}
+.kc-name{font-size:12.5px;font-weight:700;line-height:1.3}
+.kc-sub{font-size:10.5px;color:var(--muted)}
+.kc-tags{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:7px}
+.kc-bot{display:flex;align-items:center;justify-content:space-between}
+.kc-rate{font-size:10.5px;color:var(--a2);font-weight:700}
+.kc-day{font-size:10px;color:var(--muted)}
+.kc-ai{display:flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:var(--a2);margin-top:5px;padding-top:5px;border-top:1px solid var(--border)}
+.kc-ai span{color:var(--muted)}
+.add-col{min-width:46px;width:46px;height:46px;border:2px dashed var(--border);border-radius:var(--r2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;color:var(--muted);transition:all .15s;flex-shrink:0}
+.add-col:hover{border-color:var(--a1);color:var(--a1)}
+
+/* ═══ DETAIL PANEL ═══ */
+.panel{position:fixed;top:0;right:-540px;bottom:0;width:520px;background:var(--s1);border-left:1px solid var(--border);z-index:200;transition:right .25s cubic-bezier(.4,0,.2,1);overflow-y:auto;display:flex;flex-direction:column}
+.panel.open{right:0}
+.panel-hd{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;position:sticky;top:0;background:var(--s1);z-index:10;flex-shrink:0}
+.panel-title{font-family:var(--display);font-size:15px;font-weight:800;flex:1;letter-spacing:-.2px}
+.close-btn{width:28px;height:28px;border-radius:7px;background:var(--s2);border:none;color:var(--muted);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.close-btn:hover{background:var(--s3);color:var(--text)}
+.panel-body{padding:18px 22px;flex:1}
+.panel-tabs{display:flex;gap:2px;margin-bottom:18px;background:var(--s2);border-radius:9px;padding:3px}
+.pt{padding:6px 14px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;color:var(--muted);border:none;background:transparent;font-family:var(--font);transition:all .15s}
+.pt.active{background:var(--a1);color:#fff}
+.panel-section{display:none}.panel-section.active{display:block}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+.ii{}.ii-l{font-size:10px;color:var(--muted);font-weight:600;margin-bottom:2px;letter-spacing:.3px}.ii-v{font-size:12.5px;font-weight:500}
+.divider{height:1px;background:var(--border);margin:16px 0}
+.s-title{font-family:var(--display);font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.9px;margin-bottom:10px}
+/* Timeline */
+.tl{display:flex;flex-direction:column}
+.tli{display:flex;gap:11px;padding-bottom:14px;position:relative}
+.tli::before{content:'';position:absolute;left:6px;top:18px;bottom:0;width:1px;background:var(--border)}
+.tli:last-child::before{display:none}
+.tl-dot{width:14px;height:14px;border-radius:50%;background:var(--s2);border:2px solid var(--a1);flex-shrink:0;margin-top:2px;z-index:1}
+.tl-dot.g{border-color:var(--a2)}.tl-dot.y{border-color:var(--warn)}.tl-dot.r{border-color:var(--danger)}.tl-dot.p{border-color:var(--a4)}
+.tl-c{flex:1}
+.tl-act{font-size:12.5px;font-weight:500;line-height:1.4}
+.tl-m{font-size:10.5px;color:var(--muted);margin-top:2px}
+/* AI Match Ring */
+.ai-ring-wrap{display:flex;align-items:center;gap:18px;padding:16px;background:var(--s2);border-radius:10px;margin-bottom:16px;border:1px solid var(--border)}
+.ai-ring{position:relative;width:72px;height:72px;flex-shrink:0}
+.ai-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ai-ring .center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--display)}
+.ai-ring .center .pct{font-size:19px;font-weight:900}
+.ai-ring .center .lbl{font-size:8px;color:var(--muted);font-weight:600}
+.match-reasons{display:flex;flex-direction:column;gap:5px;flex:1}
+.mr{display:flex;align-items:center;gap:6px;font-size:11px}
+.mr-bar{flex:1;height:4px;background:var(--s3);border-radius:4px;overflow:hidden}
+.mr-fill{height:100%;border-radius:4px;background:var(--a2);transition:width .4s ease}
+.mr-fill.med{background:var(--warn)}
+.mr-fill.low{background:var(--danger)}
+.mr-lbl{width:70px;color:var(--muted);font-size:10px}
+.mr-val{width:26px;text-align:right;font-weight:700;font-size:10px;color:var(--text)}
+
+/* ═══ MODALS ═══ */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);z-index:999;align-items:center;justify-content:center;padding:20px}
+.overlay.open{display:flex}
+.modal{background:var(--s1);border:1px solid var(--border2);border-radius:var(--r2);width:580px;max-width:100%;max-height:90vh;overflow-y:auto;animation:popIn .2s cubic-bezier(.34,1.4,.64,1)}
+@keyframes popIn{from{transform:scale(.93);opacity:0}to{transform:scale(1);opacity:1}}
+.m-hd{display:flex;align-items:center;padding:18px 22px 14px;border-bottom:1px solid var(--border);gap:12px;position:sticky;top:0;background:var(--s1);z-index:5}
+.m-title{font-family:var(--display);font-size:15px;font-weight:800;flex:1;letter-spacing:-.2px}
+.m-body{padding:18px 22px}
+.m-foot{display:flex;justify-content:flex-end;gap:9px;padding:12px 22px 18px;border-top:1px solid var(--border)}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.fr.full{grid-template-columns:1fr}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fl{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.2px}
+.fi{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-family:var(--font);font-size:12.5px;color:var(--text);outline:none;transition:border-color .15s;width:100%}
+.fi:focus{border-color:var(--a1)}
+select.fi{cursor:pointer}
+textarea.fi{resize:vertical;min-height:72px}
+.fi::placeholder{color:var(--muted)}
+
+/* ═══ TABS ═══ */
+.tabs{display:flex;gap:2px;background:var(--s1);border-radius:9px;padding:3px;width:fit-content;border:1px solid var(--border)}
+.tab{padding:6px 15px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;color:var(--muted);border:none;background:transparent;font-family:var(--font);transition:all .15s}
+.tab.active{background:var(--a1);color:#fff}
+
+/* ═══ ANALYTICS ═══ */
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:110px;padding:0 4px}
+.bg{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.b{width:100%;border-radius:4px 4px 0 0;background:var(--a1);min-height:3px;transition:opacity .2s,height .4s ease}
+.b:hover{opacity:.75}
+.b.g{background:var(--a2)}.b.o{background:var(--a3)}.b.p{background:var(--a4)}
+.b-l{font-size:9.5px;color:var(--muted)}
+.b-v{font-size:9.5px;font-weight:700;color:var(--text)}
+.funnel-row{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.f-l{font-size:11px;color:var(--muted);width:95px;flex-shrink:0}
+.f-bar{height:20px;border-radius:4px;display:flex;align-items:center;padding:0 7px;font-size:10.5px;font-weight:700;color:#fff;transition:width .6s ease;min-width:28px}
+.f-n{font-size:11px;font-weight:700;color:var(--text);width:28px;text-align:right}
+.donut-wrap{display:flex;align-items:center;gap:18px}
+.donut{width:90px;height:90px;position:relative;flex-shrink:0}
+.donut svg{width:100%;height:100%;transform:rotate(-90deg)}
+.donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--display)}
+.legend{display:flex;flex-direction:column;gap:7px}
+.li2{display:flex;align-items:center;gap:7px;font-size:11px}
+.ld{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+/* Recruiter Perf Table */
+.rec-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.rec-row:last-child{border-bottom:none}
+.rec-rank{font-family:var(--display);font-size:13px;font-weight:800;width:20px;color:var(--muted)}
+.rec-info{flex:1}
+.rec-name{font-size:12.5px;font-weight:600}
+.rec-stat{font-size:10.5px;color:var(--muted)}
+.rec-bar-wrap{width:90px;height:5px;background:var(--s2);border-radius:5px;overflow:hidden}
+.rec-bar{height:100%;background:linear-gradient(90deg,var(--a1),var(--a2));border-radius:5px}
+.rec-val{font-family:var(--display);font-size:14px;font-weight:800;width:30px;text-align:right;color:var(--a1)}
+
+/* ═══ JOB CARDS ═══ */
+.jg{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+.jc{background:var(--s1);border:1px solid var(--border);border-radius:var(--r2);padding:16px 18px;transition:border-color .15s,box-shadow .15s;cursor:pointer}
+.jc:hover{border-color:var(--a1);box-shadow:0 6px 22px rgba(79,124,255,.09)}
+.jc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.jc-title{font-family:var(--display);font-size:14px;font-weight:800;line-height:1.3}
+.jc-client{font-size:11px;color:var(--muted);margin-top:2px}
+.jc-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}
+.jc-bar{margin-top:8px}
+.jc-prog{height:3px;background:var(--s2);border-radius:3px;overflow:hidden;margin-top:3px}
+.jc-fill{height:100%;background:linear-gradient(90deg,var(--a1),var(--a2));border-radius:3px}
+.jc-meta{display:flex;gap:10px;padding-top:10px;border-top:1px solid var(--border);flex-wrap:wrap}
+.jc-mi{font-size:10.5px;color:var(--muted);display:flex;align-items:center;gap:3px}
+.jc-mi strong{color:var(--text);font-weight:600}
+
+/* ═══ COMMS / INBOX ═══ */
+.inbox-layout{display:grid;grid-template-columns:280px 1fr;gap:0;height:calc(100vh - 130px);overflow:hidden;border:1px solid var(--border);border-radius:var(--r2)}
+.inbox-list{border-right:1px solid var(--border);overflow-y:auto;background:var(--s1)}
+.inbox-list::-webkit-scrollbar{width:3px}
+.inbox-list::-webkit-scrollbar-thumb{background:var(--border)}
+.inbox-hd{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.conv-item{padding:11px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s}
+.conv-item:hover{background:var(--s2)}
+.conv-item.active{background:rgba(79,124,255,.07);border-left:2px solid var(--a1)}
+.conv-name{font-size:12.5px;font-weight:600;margin-bottom:2px;display:flex;align-items:center;gap:6px}
+.conv-preview{font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.conv-time{font-size:10px;color:var(--muted);margin-left:auto;flex-shrink:0}
+.unread-dot{width:7px;height:7px;border-radius:50%;background:var(--a1);flex-shrink:0}
+.chat-area{display:flex;flex-direction:column;background:var(--bg)}
+.chat-hd{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:11px;background:var(--s1);flex-shrink:0}
+.chat-msgs{flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.chat-msgs::-webkit-scrollbar{width:3px}
+.msg{display:flex;flex-direction:column;gap:3px;max-width:75%}
+.msg.out{align-self:flex-end;align-items:flex-end}
+.msg.in{align-self:flex-start;align-items:flex-start}
+.msg-bubble{padding:9px 13px;border-radius:10px;font-size:12.5px;line-height:1.5}
+.msg.out .msg-bubble{background:var(--a1);color:#fff;border-radius:10px 10px 3px 10px}
+.msg.in .msg-bubble{background:var(--s2);color:var(--text);border:1px solid var(--border);border-radius:10px 10px 10px 3px}
+.msg-time{font-size:10px;color:var(--muted);padding:0 4px}
+.chat-input-wrap{padding:12px 16px;border-top:1px solid var(--border);background:var(--s1);display:flex;gap:8px;flex-shrink:0;align-items:flex-end}
+.chat-input{flex:1;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font);font-size:12.5px;color:var(--text);outline:none;resize:none;min-height:36px;max-height:80px;transition:border-color .15s}
+.chat-input:focus{border-color:var(--a1)}
+.chat-actions{display:flex;gap:6px;padding:0 18px 10px;background:var(--s1);flex-shrink:0}
+
+/* ═══ WORKFLOW ═══ */
+.wf-step{display:flex;gap:12px;padding:14px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;cursor:pointer;transition:border-color .15s}
+.wf-step:hover{border-color:var(--a1)}
+.wf-num{width:26px;height:26px;border-radius:50%;background:var(--a1);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--display)}
+.wf-content{flex:1}
+.wf-title{font-size:13px;font-weight:700;margin-bottom:3px}
+.wf-desc{font-size:11.5px;color:var(--muted);line-height:1.5}
+.wf-badge{margin-left:auto;align-self:flex-start}
+.wf-trigger{display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--s2);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;font-size:12px;cursor:pointer;transition:border-color .15s}
+.wf-trigger:hover{border-color:var(--a1)}
+.wf-trigger-ic{font-size:16px;width:24px;text-align:center;flex-shrink:0}
+.wf-toggle{width:34px;height:18px;border-radius:18px;background:var(--border);position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;margin-left:auto}
+.wf-toggle.on{background:var(--a2)}
+.wf-toggle::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .2s}
+.wf-toggle.on::after{transform:translateX(16px)}
+
+/* ═══ RBAC ═══ */
+.role-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;transition:border-color .15s}
+.role-card:hover{border-color:var(--border2)}
+.role-hd{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.role-badge{padding:2px 10px;border-radius:20px;font-size:10.5px;font-weight:700}
+.perm-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.perm{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted2)}
+.perm.on{color:var(--a2)}.perm.off{color:var(--muted);text-decoration:line-through;opacity:.5}
+.perm-ic{font-size:12px}
+
+/* ═══ MISC ═══ */
+.flex{display:flex;align-items:center;gap:8px}
+.ml-a{margin-left:auto}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.mb-4{margin-bottom:4px}
+.mb-8{margin-bottom:8px}
+.mb-14{margin-bottom:14px}
+.mb-20{margin-bottom:20px}
+.text-a1{color:var(--a1)}.text-a2{color:var(--a2)}.text-a3{color:var(--a3)}.text-a4{color:var(--a4)}.text-m{color:var(--muted)}.text-warn{color:var(--warn)}.text-r{color:var(--danger)}
+.fw7{font-weight:700}
+/* Toast */
+.toast-c{position:fixed;bottom:22px;right:22px;display:flex;flex-direction:column;gap:7px;z-index:9999}
+.toast{background:var(--s1);border:1px solid var(--border2);border-radius:10px;padding:11px 15px;font-size:12.5px;display:flex;align-items:center;gap:10px;animation:slideIn .2s ease;min-width:250px;box-shadow:0 8px 30px rgba(0,0,0,.45)}
+@keyframes slideIn{from{transform:translateX(28px);opacity:0}to{transform:translateX(0);opacity:1}}
+.toast.s{border-color:rgba(0,212,168,.3)}
+.toast.e{border-color:rgba(255,69,96,.3)}
+.toast.i{border-color:rgba(79,124,255,.3)}
+.toast-ic{font-size:15px;flex-shrink:0}
+/* Backdrop */
+#backdrop{display:none;position:fixed;inset:0;z-index:199}
+/* Progress bar */
+.prog-wrap{height:4px;background:var(--s2);border-radius:4px;overflow:hidden;margin-top:4px}
+.prog-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--a1),var(--a2))}
+/* Aging badge */
+.age-badge{font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px}
+.age-ok{background:rgba(0,212,168,.1);color:var(--a2)}
+.age-warn{background:rgba(245,166,35,.12);color:var(--warn)}
+.age-danger{background:rgba(255,69,96,.1);color:var(--danger)}
+/* SLA */
+.sla-bar{height:6px;border-radius:6px;overflow:hidden;background:var(--s2);margin-top:3px}
+.sla-fill{height:100%;border-radius:6px}
+/* Notif panel */
+.notif-panel{position:absolute;top:calc(100% + 6px);right:0;width:320px;background:var(--s1);border:1px solid var(--border2);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:300;display:none}
+.notif-panel.open{display:block}
+.notif-hd{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center}
+.ni-item{padding:10px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s;display:flex;gap:9px;align-items:flex-start}
+.ni-item:hover{background:var(--s2)}
+.ni-item:last-child{border-bottom:none}
+.ni-ic2{font-size:15px;flex-shrink:0;margin-top:1px}
+.ni-text{font-size:11.5px;line-height:1.4}
+.ni-t{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* scrollbar global */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:5px}
+</style>
+</head>
+<body>
+
+<!-- ════════════════ SIDEBAR ════════════════ -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-mark">N</div>
+    <div class="logo-text">Nex<em>us</em></div>
+    <div class="logo-badge">v2</div>
+  </div>
+  <nav>
+    <div class="nav-sec">
+      <div class="nav-lbl">Overview</div>
+      <div class="ni active" onclick="nav('dashboard',this)">
+        <span class="ni-ic">⊞</span> Dashboard
+      </div>
+    </div>
+    <div class="nav-sec">
+      <div class="nav-lbl">Recruitment</div>
+      <div class="ni" onclick="nav('pipeline',this)">
+        <span class="ni-ic">⬡</span> ATS Pipeline
+        <span class="ni-badge">14</span>
+      </div>
+      <div class="ni" onclick="nav('candidates',this)">
+        <span class="ni-ic">◎</span> Candidates
+      </div>
+      <div class="ni" onclick="nav('jobs',this)">
+        <span class="ni-ic">◈</span> Job Orders
+        <span class="ni-badge y">3</span>
+      </div>
+      <div class="ni" onclick="nav('ai',this)">
+        <span class="ni-ic">✦</span> AI Matching
+        <span class="ni-badge g">NEW</span>
+      </div>
+    </div>
+    <div class="nav-sec">
+      <div class="nav-lbl">Business Dev</div>
+      <div class="ni" onclick="nav('clients',this)">
+        <span class="ni-ic">⬜</span> Clients
+      </div>
+      <div class="ni" onclick="nav('deals',this)">
+        <span class="ni-ic">◇</span> Deals
+        <span class="ni-badge">7</span>
+      </div>
+      <div class="ni" onclick="nav('contacts',this)">
+        <span class="ni-ic">○</span> Contacts
+      </div>
+    </div>
+    <div class="nav-sec">
+      <div class="nav-lbl">Operations</div>
+      <div class="ni" onclick="nav('comms',this)">
+        <span class="ni-ic">✉</span> Communications
+        <span class="ni-badge r">5</span>
+      </div>
+      <div class="ni" onclick="nav('offers',this)">
+        <span class="ni-ic">📄</span> Offer & Docs
+      </div>
+      <div class="ni" onclick="nav('workflows',this)">
+        <span class="ni-ic">⚡</span> Workflows
+      </div>
+    </div>
+    <div class="nav-sec">
+      <div class="nav-lbl">Insights</div>
+      <div class="ni" onclick="nav('analytics',this)">
+        <span class="ni-ic">◑</span> Analytics
+      </div>
+      <div class="ni" onclick="nav('recruiter',this)">
+        <span class="ni-ic">📊</span> Recruiter KPIs
+      </div>
+    </div>
+    <div class="nav-sec">
+      <div class="nav-lbl">Admin</div>
+      <div class="ni" onclick="nav('rbac',this)">
+        <span class="ni-ic">🔐</span> Roles & Access
+      </div>
+      <div class="ni" onclick="nav('audit',this)">
+        <span class="ni-ic">📋</span> Audit Log
+      </div>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-row">
+      <div class="av" style="background:linear-gradient(135deg,#4f7cff,#b06aff)">RS</div>
+      <div class="user-info">
+        <div class="user-name">Rahul Sharma</div>
+        <div class="user-role">Admin · Founder</div>
+      </div>
+      <div class="online-dot"></div>
+    </div>
+  </div>
+</aside>
+
+<!-- ════════════════ MAIN ════════════════ -->
+<div class="main">
+  <div class="topbar">
+    <div class="page-title" id="pageTitle">Dashboard</div>
+    <div class="topbar-actions">
+      <div class="search-wrap">
+        <span style="color:var(--muted);font-size:13px">⌕</span>
+        <input type="text" placeholder="Search anything… (⌘K)" id="searchInput"/>
+        <span style="font-size:10px;color:var(--muted);white-space:nowrap">⌘K</span>
+      </div>
+      <div style="position:relative">
+        <div class="icon-btn" id="notifBtn" onclick="toggleNotif()">🔔<div class="notif-dot"></div></div>
+        <div class="notif-panel" id="notifPanel">
+          <div class="notif-hd">
+            <span style="font-size:13px;font-weight:700">Notifications</span>
+            <span class="ml-a" style="font-size:11px;color:var(--a1);cursor:pointer" onclick="showToast('All marked as read','s')">Mark all read</span>
+          </div>
+          <div class="ni-item"><span class="ni-ic2">✦</span><div><div class="ni-text"><strong>AI Match:</strong> Vijay Kumar (92%) matches <em>Cloud Architect</em> at TechCorp</div><div class="ni-t">2 min ago</div></div></div>
+          <div class="ni-item"><span class="ni-ic2">📞</span><div><div class="ni-text"><strong>Follow-up due:</strong> Call Rahul Tiwari re: DevOps screening</div><div class="ni-t">30 min ago</div></div></div>
+          <div class="ni-item"><span class="ni-ic2">⚠️</span><div><div class="ni-text"><strong>SLA Alert:</strong> TechCorp expecting shortlist for React Dev — due today 6 PM</div><div class="ni-t">1 hr ago</div></div></div>
+          <div class="ni-item"><span class="ni-ic2">📄</span><div><div class="ni-text"><strong>Offer accepted:</strong> Karan Patel signed offer letter for HCL Tech</div><div class="ni-t">3 hrs ago</div></div></div>
+          <div class="ni-item"><span class="ni-ic2">🤝</span><div><div class="ni-text"><strong>Deal update:</strong> Wipro MSA moved to Negotiation by Deepak S</div><div class="ni-t">Yesterday</div></div></div>
+        </div>
+      </div>
+      <button class="btn btn-p" onclick="openModal('quickAdd')">＋ Add New</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ════ DASHBOARD ════ -->
+    <div class="page active" id="page-dashboard">
+      <div class="stats-row">
+        <div class="scard b"><div class="s-lbl">Active Candidates</div><div class="s-val">84</div><div class="s-sub"><span class="up">↑ 12%</span> vs last month</div><div class="bg-icon">◎</div></div>
+        <div class="scard g"><div class="s-lbl">Placements MTD</div><div class="s-val">11</div><div class="s-sub"><span class="up">↑ 4</span> from last month</div><div class="bg-icon">✓</div></div>
+        <div class="scard o"><div class="s-lbl">Open Job Orders</div><div class="s-val">18</div><div class="s-sub"><span class="down">3 urgent</span> · avg 14d old</div><div class="bg-icon">◈</div></div>
+        <div class="scard p"><div class="s-lbl">Revenue Pipeline</div><div class="s-val">₹42L</div><div class="s-sub"><span class="up">↑ 28%</span> QoQ growth</div><div class="bg-icon">◇</div></div>
+      </div>
+
+      <div class="grid2 mb-20">
+        <!-- Activity Feed -->
+        <div class="card">
+          <div class="ch"><span class="ch-title">Recent Activity</span><button class="btn btn-g btn-sm" onclick="nav('audit',document.querySelector('[onclick*=audit]'))">View All</button></div>
+          <div style="padding:0 18px">
+            <div class="tli" style="padding:11px 0">
+              <div class="tl-dot g" style="margin-top:3px"></div>
+              <div class="tl-c"><div class="tl-act"><strong>Arjun Mehta</strong> → Client Interview at TechCorp — AI score <span class="text-a2 fw7">91%</span></div><div class="tl-m">2 min ago · Priya K</div></div>
+            </div>
+            <div class="tli" style="padding:11px 0">
+              <div class="tl-dot" style="margin-top:3px"></div>
+              <div class="tl-c"><div class="tl-act">New job order: <strong>Senior DevOps Engineer</strong> · Infosys BPO</div><div class="tl-m">25 min ago · You</div></div>
+            </div>
+            <div class="tli" style="padding:11px 0">
+              <div class="tl-dot y" style="margin-top:3px"></div>
+              <div class="tl-c"><div class="tl-act"><strong>Sana Mirza</strong> declined offer — rate mismatch · Offer drop logged</div><div class="tl-m">1 hr ago · Deepak S</div></div>
+            </div>
+            <div class="tli" style="padding:11px 0">
+              <div class="tl-dot p" style="margin-top:3px"></div>
+              <div class="tl-c"><div class="tl-act">Deal <strong>Wipro Enterprise MSA</strong> → Negotiation stage</div><div class="tl-m">3 hrs ago · You</div></div>
+            </div>
+            <div class="tli" style="padding:11px 0">
+              <div class="tl-dot g" style="margin-top:3px"></div>
+              <div class="tl-c"><div class="tl-act"><strong>Karan Patel</strong> signed offer letter · Placed at HCL Tech ₹38 LPA</div><div class="tl-m">Yesterday · System</div></div>
+            </div>
+            <div class="tli" style="padding:11px 0;border:none">
+              <div class="tl-dot" style="margin-top:3px;border-color:var(--a2)"></div>
+              <div class="tl-c"><div class="tl-act">Workflow triggered: <strong>30-day check-in</strong> email sent to placed candidates (3)</div><div class="tl-m">Yesterday · Automation</div></div>
+            </div>
+          </div>
+        </div>
+        <!-- Right col -->
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <!-- SLA Watch -->
+          <div class="card">
+            <div class="ch"><span class="ch-title">⚡ SLA Watch</span><span style="font-size:11px;color:var(--warn)">3 at risk</span></div>
+            <div class="cb" style="padding:10px 18px">
+              <div style="margin-bottom:10px">
+                <div class="flex mb-4"><span style="font-size:12px;font-weight:600">React Dev → TechCorp shortlist</span><span class="age-badge age-danger ml-a">Due today</span></div>
+                <div class="sla-bar"><div class="sla-fill" style="width:90%;background:var(--danger)"></div></div>
+              </div>
+              <div style="margin-bottom:10px">
+                <div class="flex mb-4"><span style="font-size:12px;font-weight:600">DevOps screening → Infosys</span><span class="age-badge age-warn ml-a">2d left</span></div>
+                <div class="sla-bar"><div class="sla-fill" style="width:65%;background:var(--warn)"></div></div>
+              </div>
+              <div>
+                <div class="flex mb-4"><span style="font-size:12px;font-weight:600">Wipro MSA proposal response</span><span class="age-badge age-ok ml-a">5d left</span></div>
+                <div class="sla-bar"><div class="sla-fill" style="width:30%;background:var(--a2)"></div></div>
+              </div>
+            </div>
+          </div>
+          <!-- Tasks -->
+          <div class="card">
+            <div class="ch"><span class="ch-title">Today's Tasks</span><button class="btn btn-g btn-sm" onclick="showToast('Task added','s')">＋</button></div>
+            <div style="padding:0 18px">
+              <div style="display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1px solid var(--border)">
+                <input type="checkbox" style="accent-color:var(--a1)" onclick="showToast('Done ✓','s')"/><div style="flex:1"><div style="font-size:12px;font-weight:500">Call Rahul Tiwari — DevOps screening</div><div style="font-size:10.5px;color:var(--muted)">Today, 3:00 PM</div></div><span class="age-badge age-danger">Urgent</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1px solid var(--border)">
+                <input type="checkbox" style="accent-color:var(--a1)" onclick="showToast('Done ✓','s')"/><div style="flex:1"><div style="font-size:12px;font-weight:500">Send shortlist → TCS Python Dev</div><div style="font-size:10.5px;color:var(--muted)">Today, 5:00 PM</div></div><span class="age-badge age-warn">High</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1px solid var(--border)">
+                <input type="checkbox" style="accent-color:var(--a1)" onclick="showToast('Done ✓','s')"/><div style="flex:1"><div style="font-size:12px;font-weight:500">BD meeting — FinEdge Solutions</div><div style="font-size:10.5px;color:var(--muted)">Tomorrow, 11:00 AM</div></div><span class="age-badge age-ok">Normal</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:9px;padding:9px 0">
+                <input type="checkbox" style="accent-color:var(--a1)" onclick="showToast('Done ✓','s')"/><div style="flex:1"><div style="font-size:12px;font-weight:500">Send offer letter — Anita Roy · HCL</div><div style="font-size:10.5px;color:var(--muted)">Tomorrow, 2:00 PM</div></div><span class="age-badge age-ok">Normal</span>
+              </div>
+            </div>
+          </div>
+          <!-- KPIs -->
+          <div class="card">
+            <div class="ch"><span class="ch-title">Key Metrics</span></div>
+            <div class="cb" style="display:flex;flex-direction:column;gap:9px">
+              <div class="flex"><span style="font-size:11.5px;color:var(--muted);flex:1">Avg Time-to-Fill</span><span style="font-size:14px;font-weight:800;color:var(--a2);font-family:var(--display)">18d</span></div>
+              <div class="flex"><span style="font-size:11.5px;color:var(--muted);flex:1">Offer Acceptance Rate</span><span style="font-size:14px;font-weight:800;color:var(--a1);font-family:var(--display)">74%</span></div>
+              <div class="flex"><span style="font-size:11.5px;color:var(--muted);flex:1">Submittal → Interview</span><span style="font-size:14px;font-weight:800;color:var(--a4);font-family:var(--display)">42%</span></div>
+              <div class="flex"><span style="font-size:11.5px;color:var(--muted);flex:1">Avg Placement Fee</span><span style="font-size:14px;font-weight:800;color:var(--warn);font-family:var(--display)">₹3.8L</span></div>
+              <div class="flex"><span style="font-size:11.5px;color:var(--muted);flex:1">Client Retention</span><span style="font-size:14px;font-weight:800;color:var(--a2);font-family:var(--display)">87%</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ ATS PIPELINE ════ -->
+    <div class="page" id="page-pipeline">
+      <div class="flex mb-20">
+        <div class="tabs">
+          <button class="tab active" onclick="switchKB('ats',this)">ATS Pipeline</button>
+          <button class="tab" onclick="switchKB('deals',this)">Deal Pipeline</button>
+        </div>
+        <div class="ml-a flex">
+          <button class="btn btn-g btn-sm" style="margin-right:8px">⊞ Filter</button>
+          <button class="btn btn-p btn-sm" onclick="openModal('addCand')">＋ Add Candidate</button>
+        </div>
+      </div>
+
+      <div id="ats-kb" class="kb-wrap">
+        <!-- Sourced -->
+        <div class="kb-col" ondragover="dov(event,this)" ondrop="ddr(event,this)">
+          <div class="col-hd"><div class="col-dot" style="background:#5a6385"></div><div class="col-nm">Sourced</div><div class="col-ct">4</div></div>
+          <div class="col-cards">
+            <div class="k-card" draggable="true" ondragstart="dst(event,this)" onclick="openCandPanel(this)">
+              <div class="kc-top"><div class="kc-av" style="background:linear-gradient(135deg,#4f7cff,#b06aff)">AM</div><div><div class="kc-name">Arjun Mehta</div><div class="kc-sub">Sr. React Dev · 5 yrs</div></div><div class="ai-score high" style="margin-left:auto;font-size:9.5px">✦ 91%</div></div>
+              <div class="kc-tags"><span class="tag t-tech">React</span><span class="tag t-tech">Node.js</span><span class="tag t-type">FT</span></div>
+              <div class="kc-bot"><span class="kc-rate">₹22–26L</span><span class="kc-day">2d ago</span></div>
+            </div>
+            <div class="k-card" draggable="true" ondragstart="dst(event,this)" onclick="openCandPanel(this)">
+              <div class="kc-top"><div class="kc-av" style="background:linear-gradient(135deg,#ff6b35,#f5a623)">KJ</div><div><div class="kc-name">Kavita Joshi</div><div class="kc-sub">Data Engineer · 4 yrs</div></div><div class="ai-score med" style="margin-left:auto;font-size:9.5px">✦ 78%</div></div>
+              <div class="kc-tags"><span class="tag t-tech">Python</span><span class="tag t-tech">Spark</span><span class="tag t-type">Contract</span><span class="tag t-hot">Hot</span></div>
+              <div class="kc-bot"><span class="kc-rate">₹80K/mo</span><span class="kc-day">1d ago</span></div>
+            </div>
+            <div class="k-card" draggable="true" ondragstart="dst(event,this)" onclick="openCandPanel(this)">
+              <div class="kc-top"><div class="kc-av" style="background:linear-gradient(135deg,#00d4a8,#4f7cff)">RT</div><div><div class="kc-name">Rahul Tiwari</div><div class="kc-sub">DevOps Eng · 6 yrs</div></div><div class="ai-score high" style="margin-left:auto;font-size:9.5px">✦ 88%</div></div>
+              <div class="kc-tags"><span class="tag t-tech">K8s</span><span class="tag t-tech">AWS</span><span class="tag t-type">C2H</span><span class="tag t-urg">Urgent</span></div>
+              <div class="kc-bot"><span class="kc-rate">₹28–32L</span><span class="kc-day">3d ago</span></div>
+            </div>
+            <div class="k-card" draggable="true" ondragstart="dst(event,this)" onclick="openCandPanel(this)">
+              <div class="kc-top"><div class="kc-av" style="background:linear-gradient(135deg,#b06aff,#ff6b35)">SP</div><div><div class="kc-name">Simran Patel</div><div class="kc-sub">QA Automation · 3 yrs</div></div><div class="ai-score med" style="margin-left:auto;font-size:9.5px">✦ 74%</div></div>
+              <div class="kc-tags"><span class="tag t-tech">Selenium</span><span class="tag t-tech">Cypress</span><span class="tag t-type">FT</span></div>
+              <div class="kc-bot"><span class="kc-rate">₹14–17L</span><span class="kc-day">today</span></div>
+            </div>
+          </div>
+        </div>
+        <!-- Screening -->
+        <div class="kb-col" ondragover="dov(event,this)" ondrop="ddr(event,this)">
+          <div class="col-hd"><div class="col-dot" style="background:var(--a1)"></div><div class="col-nm">Screening</div><div class="col-ct">3</div></div>
+          <div class="col-cards">
+            <div class="k-card" draggable="true" ondragstart="dst(event,this)" onclick="openCandPanel(this)">
+              <div class="kc-top"><div class="kc-av" style="background:linear-gradient(135deg,#00d4a8,#b06aff)">NR</div><div><div class="kc-name">Nitesh Rao</div><div class="kc-sub">Java Backend · 7 yrs</div></div><div class="ai-score high" style="margin-left:auto;font-size:9.5px">✦ 95%</div></div>
+              <div class="kc-tags"><span class="tag t-tech">Java</span><span class="tag t-tech">Kafka</span><span class="tag t-type">FT</span></div>
+              <div class="kc-bot"><span class="kc-rate">₹34–38L</span><span class="kc-day">4d in</span></div>
+            </div>
+            <div class="k-card" draggable="true" ondragstart="dst(event,this)" onclick="openCandPanel(this)">
+              <div class="kc-top"><div class="kc-av" style="background:linear-gradient(135deg,#f5a623,#ff4560)">AS</div><div><div class="kc-name">Anita Shah</div><div class="kc-sub">Product Mgr · 5 yrs</div></div><div class="ai-score med" style="margin-left:auto;font-size:9.5px">✦ 81%</div></div>
+              <div class="kc-tags"><span class="tag t-tech">Agile</span><span class="tag t-hot">Hot</span><span class="tag t-type">FT</span></div>
+              <div class="kc-bot"><span class="kc-rate">₹28–32L</span><span class="kc-day">2d in</span></div>
+            </div>
+            <div class="k-card" draggable="true" ondragstart="dst(event,this)" onclick="openCandPanel(this)">
+              <div class="kc-top"><div class="kc-av" style="background:linear-gradient(135deg,#4f7cff,#00d4a8)">VK</div><div><div class="kc-name">Vijay Kumar</div><div class="kc-sub">Cloud Arch · 9 yrs</div></div><div class="ai-score high" style="margin-left:auto;font-size:9.5px">✦ 92%</div></div>
+              <div class="kc-tags"><span class="tag t-tech">AWS</span><span class="tag t-tech">Terraform</span><span class="tag t-urg">Urgent</span></div>
+              <div class="kc-bot"><span class="kc-rate">₹1.2L/mo</span><span class="kc-day">1d in</span></div>
+            </div>
+          </div>
+        </div>
+        <!-- Submitted -->
+        <div class="kb-col" ondragover="dov(event,this)" ondrop="ddr(event,this)">
+          <div class="col-hd"><div class="col-dot" style="background:var(--a4)"></div><div class="col-nm">Submitted</div><div class="col-ct">2</div></div>
+          <div class="col-cards">
+            <div class="k-card" draggable="true" ondragstart="dst(event,this)" onclick="openCandPanel(this)">
+              <div class="kc-top"><div class="kc-av" style="background:linear-gradient(135deg,#b06aff,#4f7cff)">PR</div><div><div class="kc-name">Priya Rajan</div><div class="kc-sub">ML Engineer · 4 yrs</div></div><div class="ai-score high" style="margin-left:auto;font-size:9.5px">✦ 87%</div></div>
+              <div class="kc-tags"><span class="tag t-tech">Python</span><span class="tag t-tech">TensorFlow</span><span class="tag t-type">FT</span></div>
+              <div class="kc-bot"><span class="kc-rate">₹26–30L</span><span class="kc-day">→ TechCorp</span></div>
+            </div>
+            <div class="k-card" draggable="true" ondragstart="dst(event,this)" onclick="openCandPanel(this)">
+              <div class="kc-top"><div class="kc-av" style="background:linear-gradient(135deg,#ff4560,#b06aff)">SB</div><div><div class="kc-name">Sohail Baig</div><div class="kc-sub">Cybersec · 5 yrs</div></div><div class="ai-score med" style="margin-left:auto;font-size:9.5px">✦ 76%</div></div>
+              <div class="kc-tags"><span class="tag t-tech">SIEM</span><span class="tag t-tech">Splunk</span><span class="tag t-type">C2H</span></div>
+              <div class="kc-bot"><span class="kc-rate">₹24–28L</span><span class="kc-day">→ Wipro</span></div>
+            </div>
+          </div>
+        </div>
+        <!-- Interview -->
+        <div class="kb-col" ondragover="dov(event,this)" ondrop="ddr(event,this)">
+          <div class="col-hd"><div class="col-dot" style="background:var(--warn)"></div><div class="col-nm">Client Interview</div><div class="col-ct">2</div></div>
+          <div class="col-cards">
+            <div class="k-card" draggable="true" ondragstart="dst(event,this)" onclick="openCandPanel(this)">
+              <div class="kc-top"><div class="kc-av" style="background:linear-gradient(135deg,#f5a623,#ff6b35)">DP</div><div><div class="kc-name">Deepak Pillai</div><div class="kc-sub">SAP Consultant · 8 yrs</div></div><div class="ai-score high" style="margin-left:auto;font-size:9.5px">✦ 89%</div></div>
+              <div class="kc-tags"><span class="tag t-tech">SAP FICO</span><span class="tag t-hot">Hot</span><span class="tag t-type">FT</span></div>
+              <div class="kc-bot"><span class="kc-rate">₹42–48L</span><span class="kc-day">→ HCL</span></div>
+            </div>
+            <div class="k-card" draggable="true" ondragstart="dst(event,this)" onclick="openCandPanel(this)">
+              <div class="kc-top"><div class="kc-av" style="background:linear-gradient(135deg,#4f7cff,#b06aff)">MK</div><div><div class="kc-name">Meera Krishnan</div><div class="kc-sub">Azure Architect · 7 yrs</div></div><div class="ai-score high" style="margin-left:auto;font-size:9.5px">✦ 93%</div></div>
+              <div class="kc-tags"><span class="tag t-tech">Azure</span><span class="tag t-tech">DevOps</span><span class="tag t-type">FT</span></div>
+              <div class="kc-bot"><span class="kc-rate">₹36–42L</span><span class="kc-day">→ TCS</span></div>
+            </div>
+          </div>
+        </div>
+        <!-- Offer -->
+        <div class="kb-col" ondragover="dov(event,this)" ondrop="ddr(event,this)">
+          <div class="col-hd"><div class="col-dot" style="background:var(--a3)"></div><div class="col-nm">Offer Stage</div><div class="col-ct">1</div></div>
+          <div class="col-cards">
+            <div class="k-card" draggable="true" ondragstart="dst(event,this)" onclick="openCandPanel(this)">
+              <div class="kc-top"><div class="kc-av" style="background:linear-gradient(135deg,#00d4a8,#4f7cff)">AR</div><div><div class="kc-name">Anita Roy</div><div class="kc-sub">Full Stack Dev · 6 yrs</div></div><div class="ai-score high" style="margin-left:auto;font-size:9.5px">✦ 84%</div></div>
+              <div class="kc-tags"><span class="tag t-tech">Vue.js</span><span class="tag t-tech">Laravel</span><span class="tag t-type">FT</span></div>
+              <div class="kc-bot"><span class="kc-rate">₹30L offered</span><span class="kc-day">→ TCS</span></div>
+            </div>
+          </div>
+        </div>
+        <!-- Placed -->
+        <div class="kb-col" ondragover="dov(event,this)" ondrop="ddr(event,this)">
+          <div class="col-hd"><div class="col-dot" style="background:var(--a2)"></div><div class="col-nm">Placed ✓</div><div class="col-ct">1</div></div>
+          <div class="col-cards">
+            <div class="k-card" draggable="true" ondragstart="dst(event,this)" onclick="openCandPanel(this)">
+              <div class="kc-top"><div class="kc-av" style="background:linear-gradient(135deg,#00d4a8,#b06aff)">KP</div><div><div class="kc-name">Karan Patel</div><div class="kc-sub">Data Scientist · 5 yrs</div></div><div class="ai-score high" style="margin-left:auto;font-size:9.5px">✦ 96%</div></div>
+              <div class="kc-tags"><span class="tag t-tech">Python</span><span class="tag t-tech">R</span><span class="tag t-type">FT</span></div>
+              <div class="kc-bot"><span class="kc-rate" style="color:var(--a2)">✓ ₹38L</span><span class="kc-day">HCL Tech</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="add-col" onclick="showToast('Custom stages — coming next sprint','i')" title="Add stage">＋</div>
+      </div>
+
+      <!-- Deals KB -->
+      <div id="deals-kb" class="kb-wrap" style="display:none">
+        <div class="kb-col" ondragover="dov(event,this)" ondrop="ddr(event,this)"><div class="col-hd"><div class="col-dot" style="background:#5a6385"></div><div class="col-nm">Lead</div><div class="col-ct">2</div></div><div class="col-cards"><div class="k-card" draggable="true" ondragstart="dst(event,this)"><div class="kc-name mb-4">FinEdge Solutions</div><div class="kc-tags"><span class="tag t-tech">BFSI</span><span class="tag t-type">MSA</span></div><div class="kc-bot"><span class="kc-rate">₹8L est.</span><span class="kc-day">Inbound</span></div></div><div class="k-card" draggable="true" ondragstart="dst(event,this)"><div class="kc-name mb-4">QuickCommerce Ltd</div><div class="kc-tags"><span class="tag t-tech">E-Comm</span></div><div class="kc-bot"><span class="kc-rate">₹5L est.</span><span class="kc-day">Referral</span></div></div></div></div>
+        <div class="kb-col" ondragover="dov(event,this)" ondrop="ddr(event,this)"><div class="col-hd"><div class="col-dot" style="background:var(--a1)"></div><div class="col-nm">Qualified</div><div class="col-ct">1</div></div><div class="col-cards"><div class="k-card" draggable="true" ondragstart="dst(event,this)"><div class="kc-name mb-4">Wipro Enterprise</div><div class="kc-tags"><span class="tag t-tech">IT Svc</span><span class="tag t-hot">Hot</span></div><div class="kc-bot"><span class="kc-rate">₹18L est.</span><span class="kc-day">BD Team</span></div></div></div></div>
+        <div class="kb-col" ondragover="dov(event,this)" ondrop="ddr(event,this)"><div class="col-hd"><div class="col-dot" style="background:var(--a4)"></div><div class="col-nm">Proposal Sent</div><div class="col-ct">1</div></div><div class="col-cards"><div class="k-card" draggable="true" ondragstart="dst(event,this)"><div class="kc-name mb-4">Tata Elxsi</div><div class="kc-tags"><span class="tag t-tech">Engg</span></div><div class="kc-bot"><span class="kc-rate">₹12L est.</span><span class="kc-day">Day 3</span></div></div></div></div>
+        <div class="kb-col" ondragover="dov(event,this)" ondrop="ddr(event,this)"><div class="col-hd"><div class="col-dot" style="background:var(--warn)"></div><div class="col-nm">Negotiation</div><div class="col-ct">1</div></div><div class="col-cards"><div class="k-card" draggable="true" ondragstart="dst(event,this)"><div class="kc-name mb-4">Wipro MSA</div><div class="kc-tags"><span class="tag t-urg">Urgent</span></div><div class="kc-bot"><span class="kc-rate">₹22L est.</span><span class="kc-day">Day 8</span></div></div></div></div>
+        <div class="kb-col" ondragover="dov(event,this)" ondrop="ddr(event,this)"><div class="col-hd"><div class="col-dot" style="background:var(--a2)"></div><div class="col-nm">Won ✓</div><div class="col-ct">2</div></div><div class="col-cards"><div class="k-card"><div class="kc-name mb-4">TechCorp MSA</div><div class="kc-tags"><span class="tag t-type">Multi-yr</span></div><div class="kc-bot"><span class="kc-rate" style="color:var(--a2)">✓ ₹14L</span><span class="kc-day">Q1 2026</span></div></div></div></div>
+      </div>
+    </div>
+
+    <!-- ════ CANDIDATES ════ -->
+    <div class="page" id="page-candidates">
+      <div class="flex mb-20">
+        <div class="tabs"><button class="tab active">All</button><button class="tab" onclick="showToast('Filter: Active','i')">Active</button><button class="tab" onclick="showToast('Filter: Placed','i')">Placed</button><button class="tab" onclick="showToast('Filter: Bench','i')">Bench</button></div>
+        <div class="ml-a flex"><button class="btn btn-g btn-sm" style="margin-right:8px">⬆ Import CSV</button><button class="btn btn-p btn-sm" onclick="openModal('addCand')">＋ Add Candidate</button></div>
+      </div>
+      <div class="card">
+        <table>
+          <thead><tr><th>Candidate</th><th>Role</th><th>Skills</th><th>Exp</th><th>Type</th><th>CTC Range</th><th>AI Score</th><th>Status</th><th>Source</th><th>Owner</th><th>Actions</th></tr></thead>
+          <tbody>
+            <tr style="cursor:pointer" onclick="openCandDetail()">
+              <td><div class="flex"><div class="av" style="width:26px;height:26px;font-size:9px;background:linear-gradient(135deg,#4f7cff,#b06aff)">AM</div><div><div class="td-name">Arjun Mehta</div><div class="td-m">arjun.m@email.com</div></div></div></td>
+              <td>Sr. React Dev</td><td><div class="flex" style="flex-wrap:nowrap"><span class="tag t-tech">React</span><span class="tag t-tech">Node</span></div></td>
+              <td style="color:var(--muted2)">5 yrs</td><td><span class="tag t-type">FT</span></td><td class="td-a">₹22–26L</td>
+              <td><div class="flex gap-4"><div class="score-ring" style="width:28px;height:28px"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--s3)" stroke-width="3"/><circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--a2)" stroke-width="3" stroke-dasharray="91 9" stroke-linecap="round"/></svg><div class="score-val" style="font-size:7px;font-weight:800;color:var(--a2)">91</div></div></div></td>
+              <td><span class="pill p-screen">Screening</span></td><td class="td-m">LinkedIn</td><td class="td-m">Priya K</td>
+              <td><div class="flex"><button class="icon-btn" onclick="event.stopPropagation();openCandDetail()" title="View">👁</button><button class="icon-btn" onclick="event.stopPropagation();showToast('Email opened','i')" title="Email">✉</button><button class="icon-btn" onclick="event.stopPropagation();showToast('WhatsApp opened','i')" title="WhatsApp">💬</button></div></td>
+            </tr>
+            <tr style="cursor:pointer" onclick="openCandDetail()">
+              <td><div class="flex"><div class="av" style="width:26px;height:26px;font-size:9px;background:linear-gradient(135deg,#ff6b35,#f5a623)">KJ</div><div><div class="td-name">Kavita Joshi</div><div class="td-m">kavita.j@email.com</div></div></div></td>
+              <td>Data Engineer</td><td><div class="flex" style="flex-wrap:nowrap"><span class="tag t-tech">Python</span><span class="tag t-tech">Spark</span></div></td>
+              <td style="color:var(--muted2)">4 yrs</td><td><span class="tag t-type">Contract</span></td><td class="td-a">₹80K/mo</td>
+              <td><div class="flex gap-4"><div class="score-ring" style="width:28px;height:28px"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--s3)" stroke-width="3"/><circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--warn)" stroke-width="3" stroke-dasharray="78 22" stroke-linecap="round"/></svg><div class="score-val" style="font-size:7px;font-weight:800;color:var(--warn)">78</div></div></div></td>
+              <td><span class="pill p-offer">Offer</span></td><td class="td-m">Referral</td><td class="td-m">Deepak S</td>
+              <td><div class="flex"><button class="icon-btn" onclick="event.stopPropagation();openCandDetail()">👁</button><button class="icon-btn" onclick="event.stopPropagation();showToast('Email opened','i')">✉</button><button class="icon-btn" onclick="event.stopPropagation();showToast('SMS sent','s')">💬</button></div></td>
+            </tr>
+            <tr style="cursor:pointer" onclick="openCandDetail()">
+              <td><div class="flex"><div class="av" style="width:26px;height:26px;font-size:9px;background:linear-gradient(135deg,#00d4a8,#4f7cff)">VK</div><div><div class="td-name">Vijay Kumar</div><div class="td-m">vijay.k@email.com</div></div></div></td>
+              <td>Cloud Architect</td><td><div class="flex" style="flex-wrap:nowrap"><span class="tag t-tech">AWS</span><span class="tag t-tech">Terraform</span></div></td>
+              <td style="color:var(--muted2)">9 yrs</td><td><span class="tag t-type">Contract</span></td><td class="td-a">₹1.2L/mo</td>
+              <td><div class="flex gap-4"><div class="score-ring" style="width:28px;height:28px"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--s3)" stroke-width="3"/><circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--a2)" stroke-width="3" stroke-dasharray="92 8" stroke-linecap="round"/></svg><div class="score-val" style="font-size:7px;font-weight:800;color:var(--a2)">92</div></div></div></td>
+              <td><span class="pill p-interview">Interview</span></td><td class="td-m">Naukri</td><td class="td-m">You</td>
+              <td><div class="flex"><button class="icon-btn" onclick="event.stopPropagation();openCandDetail()">👁</button><button class="icon-btn" onclick="event.stopPropagation();showToast('Email opened','i')">✉</button><button class="icon-btn" onclick="event.stopPropagation();showToast('WhatsApp opened','i')">💬</button></div></td>
+            </tr>
+            <tr style="cursor:pointer" onclick="openCandDetail()">
+              <td><div class="flex"><div class="av" style="width:26px;height:26px;font-size:9px;background:linear-gradient(135deg,#00d4a8,#b06aff)">KP</div><div><div class="td-name">Karan Patel</div><div class="td-m">karan.p@email.com</div></div></div></td>
+              <td>Data Scientist</td><td><div class="flex" style="flex-wrap:nowrap"><span class="tag t-tech">Python</span><span class="tag t-tech">R</span></div></td>
+              <td style="color:var(--muted2)">5 yrs</td><td><span class="tag t-type">FT</span></td><td class="td-g">₹38L placed</td>
+              <td><div class="flex gap-4"><div class="score-ring" style="width:28px;height:28px"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--s3)" stroke-width="3"/><circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--a2)" stroke-width="3" stroke-dasharray="96 4" stroke-linecap="round"/></svg><div class="score-val" style="font-size:7px;font-weight:800;color:var(--a2)">96</div></div></div></td>
+              <td><span class="pill p-placed">Placed</span></td><td class="td-m">LinkedIn</td><td class="td-m">Priya K</td>
+              <td><div class="flex"><button class="icon-btn" onclick="event.stopPropagation();openCandDetail()">👁</button><button class="icon-btn" onclick="event.stopPropagation();showToast('Email opened','i')">✉</button><button class="icon-btn" onclick="event.stopPropagation();showToast('Docs viewed','i')">📄</button></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ════ JOB ORDERS ════ -->
+    <div class="page" id="page-jobs">
+      <div class="flex mb-20">
+        <div class="tabs"><button class="tab active">All</button><button class="tab">Open</button><button class="tab">Urgent</button><button class="tab">Filled</button></div>
+        <div class="ml-a"><button class="btn btn-p btn-sm" onclick="openModal('addJob')">＋ New Job Order</button></div>
+      </div>
+      <div class="jg">
+        <div class="jc" onclick="showToast('Job order opened','i')"><div class="jc-top"><div><div class="jc-title">Senior DevOps Engineer</div><div class="jc-client">Infosys BPO · Hyderabad</div></div><span class="pill p-onhold" style="background:rgba(255,69,96,.1);color:var(--danger)">Urgent</span></div><div class="jc-tags"><span class="tag t-tech">K8s</span><span class="tag t-tech">AWS</span><span class="tag t-tech">Terraform</span><span class="tag t-type">FT</span></div><div class="jc-bar"><div class="flex"><span style="font-size:10.5px;color:var(--muted)">Pipeline</span><span style="font-size:10.5px;margin-left:auto;color:var(--text)">2/5</span></div><div class="jc-prog"><div class="jc-fill" style="width:40%"></div></div></div><div class="jc-meta"><div class="jc-mi">💰 <strong>₹28–35L</strong></div><div class="jc-mi">📅 <strong>14d</strong> old</div><div class="jc-mi">👤 <strong>Priya K</strong></div></div></div>
+        <div class="jc" onclick="showToast('Job order opened','i')"><div class="jc-top"><div><div class="jc-title">Python Data Engineer</div><div class="jc-client">TCS Digital · Pune</div></div><span class="pill p-active">Open</span></div><div class="jc-tags"><span class="tag t-tech">Python</span><span class="tag t-tech">PySpark</span><span class="tag t-type">Contract</span></div><div class="jc-bar"><div class="flex"><span style="font-size:10.5px;color:var(--muted)">Pipeline</span><span style="font-size:10.5px;margin-left:auto;color:var(--text)">4/6</span></div><div class="jc-prog"><div class="jc-fill" style="width:66%"></div></div></div><div class="jc-meta"><div class="jc-mi">💰 <strong>₹70–90K/mo</strong></div><div class="jc-mi">📅 <strong>8d</strong> old</div><div class="jc-mi">👤 <strong>Deepak S</strong></div></div></div>
+        <div class="jc" onclick="showToast('Job order opened','i')"><div class="jc-top"><div><div class="jc-title">SAP FICO Consultant</div><div class="jc-client">HCL Technologies · Mumbai</div></div><span class="pill p-active">Open</span></div><div class="jc-tags"><span class="tag t-tech">SAP FICO</span><span class="tag t-tech">S/4HANA</span><span class="tag t-type">FT</span></div><div class="jc-bar"><div class="flex"><span style="font-size:10.5px;color:var(--muted)">Pipeline</span><span style="font-size:10.5px;margin-left:auto;color:var(--text)">1/4</span></div><div class="jc-prog"><div class="jc-fill" style="width:25%"></div></div></div><div class="jc-meta"><div class="jc-mi">💰 <strong>₹42–50L</strong></div><div class="jc-mi">📅 <strong>5d</strong> old</div><div class="jc-mi">👤 <strong>You</strong></div></div></div>
+        <div class="jc" onclick="showToast('Job order opened','i')"><div class="jc-top"><div><div class="jc-title">React + Node Developer</div><div class="jc-client">TechCorp India · Bangalore</div></div><span class="pill p-onhold" style="background:rgba(255,69,96,.1);color:var(--danger)">Urgent</span></div><div class="jc-tags"><span class="tag t-tech">React</span><span class="tag t-tech">Node.js</span><span class="tag t-type">C2H</span></div><div class="jc-bar"><div class="flex"><span style="font-size:10.5px;color:var(--muted)">Pipeline</span><span style="font-size:10.5px;margin-left:auto;color:var(--text)">3/5</span></div><div class="jc-prog"><div class="jc-fill" style="width:60%"></div></div></div><div class="jc-meta"><div class="jc-mi">💰 <strong>₹18–24L</strong></div><div class="jc-mi">📅 <strong>3d</strong> old</div><div class="jc-mi">👤 <strong>Priya K</strong></div></div></div>
+        <div class="jc" onclick="showToast('Job order opened','i')"><div class="jc-top"><div><div class="jc-title">Cloud Security Engineer</div><div class="jc-client">Wipro Enterprise · Delhi NCR</div></div><span class="pill p-active">Open</span></div><div class="jc-tags"><span class="tag t-tech">AWS Sec</span><span class="tag t-tech">Zero Trust</span><span class="tag t-type">FT</span></div><div class="jc-bar"><div class="flex"><span style="font-size:10.5px;color:var(--muted)">Pipeline</span><span style="font-size:10.5px;margin-left:auto;color:var(--text)">1/3</span></div><div class="jc-prog"><div class="jc-fill" style="width:33%"></div></div></div><div class="jc-meta"><div class="jc-mi">💰 <strong>₹30–40L</strong></div><div class="jc-mi">📅 <strong>11d</strong> old</div><div class="jc-mi">👤 <strong>Deepak S</strong></div></div></div>
+      </div>
+    </div>
+
+    <!-- ════ AI MATCHING ════ -->
+    <div class="page" id="page-ai">
+      <div class="flex mb-20">
+        <div>
+          <div style="font-family:var(--display);font-size:20px;font-weight:900;margin-bottom:3px;letter-spacing:-.3px">✦ AI Matching Engine</div>
+          <div style="font-size:12.5px;color:var(--muted)">Skill-vector matching · Semantic NLP scoring · Explainable rankings · Bias-reduced</div>
+        </div>
+        <div class="ml-a"><button class="btn btn-p btn-sm" onclick="showToast('Running match for all open jobs…','i')">▶ Run Full Match</button></div>
+      </div>
+      <!-- Select job to match -->
+      <div class="card mb-20">
+        <div class="ch"><span class="ch-title">Match Candidates to Job Order</span></div>
+        <div class="cb">
+          <div class="fr mb-14">
+            <div class="fg"><label class="fl">Select Job Order</label>
+              <select class="fi" onchange="showToast('Matching engine running…','i')">
+                <option>Senior DevOps Engineer — Infosys BPO (Urgent)</option>
+                <option>Python Data Engineer — TCS Digital</option>
+                <option>React + Node Developer — TechCorp India</option>
+                <option>Cloud Security Engineer — Wipro</option>
+              </select>
+            </div>
+            <div class="fg"><label class="fl">Matching Mode</label>
+              <select class="fi">
+                <option>Balanced (Skills + Experience + Rate)</option>
+                <option>Skills-first (Strict tech match)</option>
+                <option>Rate-priority (Budget-fit first)</option>
+                <option>Availability-first (Notice period)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Matches -->
+      <div class="s-title">Top Matched Candidates — Senior DevOps Engineer</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <!-- Match 1 -->
+        <div class="card" style="padding:0">
+          <div style="padding:16px 20px;display:flex;align-items:center;gap:16px">
+            <div class="av" style="width:42px;height:42px;font-size:14px;background:linear-gradient(135deg,#00d4a8,#4f7cff);flex-shrink:0">RT</div>
+            <div style="flex:1">
+              <div class="flex mb-4"><span style="font-size:14px;font-weight:700">Rahul Tiwari</span><span class="pill p-screen" style="margin-left:8px">Screening</span><span class="ml-a" style="font-size:11px;color:var(--muted)">₹28–32L · 30d notice</span></div>
+              <div style="font-size:11.5px;color:var(--muted);margin-bottom:8px">DevOps Engineer · 6 yrs · Bangalore</div>
+              <div class="match-reasons">
+                <div class="mr"><span class="mr-lbl">Kubernetes</span><div class="mr-bar"><div class="mr-fill" style="width:96%"></div></div><span class="mr-val">96%</span></div>
+                <div class="mr"><span class="mr-lbl">AWS</span><div class="mr-bar"><div class="mr-fill" style="width:92%"></div></div><span class="mr-val">92%</span></div>
+                <div class="mr"><span class="mr-lbl">Terraform</span><div class="mr-bar"><div class="mr-fill" style="width:88%"></div></div><span class="mr-val">88%</span></div>
+                <div class="mr"><span class="mr-lbl">Rate fit</span><div class="mr-bar"><div class="mr-fill" style="width:95%"></div></div><span class="mr-val">95%</span></div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0">
+              <div class="ai-ring" style="width:64px;height:64px">
+                <svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--s3)" stroke-width="3.2"/><circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--a2)" stroke-width="3.2" stroke-dasharray="88 12" stroke-linecap="round"/></svg>
+                <div class="center"><span class="pct" style="color:var(--a2)">88%</span><span class="lbl">match</span></div>
+              </div>
+              <button class="btn btn-p btn-xs" onclick="showToast('Rahul Tiwari submitted to Infosys','s')">Submit</button>
+            </div>
+          </div>
+        </div>
+        <!-- Match 2 -->
+        <div class="card" style="padding:0">
+          <div style="padding:16px 20px;display:flex;align-items:center;gap:16px">
+            <div class="av" style="width:42px;height:42px;font-size:14px;background:linear-gradient(135deg,#4f7cff,#00d4a8);flex-shrink:0">VK</div>
+            <div style="flex:1">
+              <div class="flex mb-4"><span style="font-size:14px;font-weight:700">Vijay Kumar</span><span class="pill p-screen" style="margin-left:8px">Screening</span><span class="ml-a" style="font-size:11px;color:var(--muted)">₹1.2L/mo · Immediate</span></div>
+              <div style="font-size:11.5px;color:var(--muted);margin-bottom:8px">Cloud Architect · 9 yrs · Mumbai</div>
+              <div class="match-reasons">
+                <div class="mr"><span class="mr-lbl">Kubernetes</span><div class="mr-bar"><div class="mr-fill" style="width:85%"></div></div><span class="mr-val">85%</span></div>
+                <div class="mr"><span class="mr-lbl">AWS</span><div class="mr-bar"><div class="mr-fill" style="width:98%"></div></div><span class="mr-val">98%</span></div>
+                <div class="mr"><span class="mr-lbl">Terraform</span><div class="mr-bar"><div class="mr-fill" style="width:90%"></div></div><span class="mr-val">90%</span></div>
+                <div class="mr"><span class="mr-lbl">Rate fit</span><div class="mr-bar"><div class="mr-fill med" style="width:62%"></div></div><span class="mr-val" style="color:var(--warn)">62%</span></div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0">
+              <div class="ai-ring" style="width:64px;height:64px">
+                <svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--s3)" stroke-width="3.2"/><circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--a2)" stroke-width="3.2" stroke-dasharray="82 18" stroke-linecap="round"/></svg>
+                <div class="center"><span class="pct" style="color:var(--a2)">82%</span><span class="lbl">match</span></div>
+              </div>
+              <button class="btn btn-p btn-xs" onclick="showToast('Vijay Kumar submitted to Infosys','s')">Submit</button>
+            </div>
+          </div>
+        </div>
+        <!-- Match 3 low -->
+        <div class="card" style="padding:0;opacity:.75">
+          <div style="padding:16px 20px;display:flex;align-items:center;gap:16px">
+            <div class="av" style="width:42px;height:42px;font-size:14px;background:linear-gradient(135deg,#b06aff,#ff6b35);flex-shrink:0">SB</div>
+            <div style="flex:1">
+              <div class="flex mb-4"><span style="font-size:14px;font-weight:700">Sohail Baig</span><span class="pill p-prospect" style="margin-left:8px">Sourced</span><span class="ml-a" style="font-size:11px;color:var(--muted)">₹24–28L · 60d notice</span></div>
+              <div style="font-size:11.5px;color:var(--muted);margin-bottom:8px">Cybersec Analyst · 5 yrs · Delhi NCR</div>
+              <div class="match-reasons">
+                <div class="mr"><span class="mr-lbl">Kubernetes</span><div class="mr-bar"><div class="mr-fill low" style="width:28%"></div></div><span class="mr-val" style="color:var(--danger)">28%</span></div>
+                <div class="mr"><span class="mr-lbl">AWS</span><div class="mr-bar"><div class="mr-fill med" style="width:55%"></div></div><span class="mr-val" style="color:var(--warn)">55%</span></div>
+                <div class="mr"><span class="mr-lbl">Notice</span><div class="mr-bar"><div class="mr-fill low" style="width:35%"></div></div><span class="mr-val" style="color:var(--danger)">35%</span></div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0">
+              <div class="ai-ring" style="width:64px;height:64px">
+                <svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--s3)" stroke-width="3.2"/><circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--danger)" stroke-width="3.2" stroke-dasharray="47 53" stroke-linecap="round"/></svg>
+                <div class="center"><span class="pct" style="color:var(--danger)">47%</span><span class="lbl">match</span></div>
+              </div>
+              <button class="btn btn-g btn-xs">Nurture</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ CLIENTS ════ -->
+    <div class="page" id="page-clients">
+      <div class="flex mb-20"><div class="ml-a"><button class="btn btn-p btn-sm" onclick="openModal('addClient')">＋ Add Client</button></div></div>
+      <div class="card">
+        <table>
+          <thead><tr><th>Company</th><th>Industry</th><th>Primary Contact</th><th>Open Roles</th><th>Revenue</th><th>Last Activity</th><th>SLA</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody>
+            <tr style="cursor:pointer" onclick="openClientPanel()"><td><div class="flex"><div class="av" style="width:28px;height:28px;font-size:9px;background:linear-gradient(135deg,#4f7cff,#00d4a8)">TC</div><div class="td-name">TechCorp India</div></div></td><td class="td-m">IT Products</td><td class="td-m">Sneha Kapoor<br><span style="font-size:10px">VP Engineering</span></td><td class="td-a">4</td><td class="td-g">₹14L</td><td class="td-m">2d ago</td><td><div><span style="font-size:10px;color:var(--a2)">✓ 100%</span><div class="sla-bar" style="width:60px"><div class="sla-fill" style="width:100%;background:var(--a2)"></div></div></div></td><td><span class="pill p-active">Active</span></td><td><div class="flex"><button class="icon-btn" onclick="event.stopPropagation();openClientPanel()">👁</button><button class="icon-btn" onclick="event.stopPropagation();showToast('Email opened','i')">✉</button><button class="icon-btn" onclick="event.stopPropagation();showToast('Note added','s')">📝</button></div></td></tr>
+            <tr style="cursor:pointer" onclick="openClientPanel()"><td><div class="flex"><div class="av" style="width:28px;height:28px;font-size:9px;background:linear-gradient(135deg,#b06aff,#4f7cff)">HT</div><div class="td-name">HCL Technologies</div></div></td><td class="td-m">IT Services</td><td class="td-m">Ravi Nair<br><span style="font-size:10px">TA Head</span></td><td class="td-a">2</td><td class="td-g">₹9L</td><td class="td-m">1w ago</td><td><div><span style="font-size:10px;color:var(--warn)">72%</span><div class="sla-bar" style="width:60px"><div class="sla-fill" style="width:72%;background:var(--warn)"></div></div></div></td><td><span class="pill p-active">Active</span></td><td><div class="flex"><button class="icon-btn" onclick="event.stopPropagation();openClientPanel()">👁</button><button class="icon-btn" onclick="event.stopPropagation();showToast('Email opened','i')">✉</button><button class="icon-btn" onclick="event.stopPropagation();showToast('Note added','s')">📝</button></div></td></tr>
+            <tr style="cursor:pointer" onclick="openClientPanel()"><td><div class="flex"><div class="av" style="width:28px;height:28px;font-size:9px;background:linear-gradient(135deg,#ff6b35,#f5a623)">WI</div><div class="td-name">Wipro Enterprise</div></div></td><td class="td-m">IT Services</td><td class="td-m">Meera Joshi<br><span style="font-size:10px">Procurement</span></td><td class="td-a">3</td><td style="color:var(--warn);font-weight:600">₹11L</td><td class="td-m">Yesterday</td><td><div><span style="font-size:10px;color:var(--a1)">88%</span><div class="sla-bar" style="width:60px"><div class="sla-fill" style="width:88%;background:var(--a1)"></div></div></div></td><td><span class="pill p-prospect">Prospect</span></td><td><div class="flex"><button class="icon-btn" onclick="event.stopPropagation();openClientPanel()">👁</button><button class="icon-btn" onclick="event.stopPropagation();showToast('Email opened','i')">✉</button><button class="icon-btn" onclick="event.stopPropagation();showToast('Note added','s')">📝</button></div></td></tr>
+            <tr style="cursor:pointer" onclick="openClientPanel()"><td><div class="flex"><div class="av" style="width:28px;height:28px;font-size:9px;background:linear-gradient(135deg,#00d4a8,#b06aff)">FE</div><div class="td-name">FinEdge Solutions</div></div></td><td class="td-m">BFSI / Fintech</td><td class="td-m">Aryan Seth<br><span style="font-size:10px">CTO</span></td><td class="td-a">1</td><td class="td-m">—</td><td class="td-m">3d ago</td><td><div><span style="font-size:10px;color:var(--muted)">New</span></div></td><td><span class="pill p-lead">New Lead</span></td><td><div class="flex"><button class="icon-btn" onclick="event.stopPropagation();openClientPanel()">👁</button><button class="icon-btn" onclick="event.stopPropagation();showToast('Email opened','i')">✉</button><button class="icon-btn" onclick="event.stopPropagation();showToast('Note added','s')">📝</button></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ════ DEALS ════ -->
+    <div class="page" id="page-deals">
+      <div class="flex mb-20"><div class="ml-a"><button class="btn btn-p btn-sm" onclick="openModal('addDeal')">＋ New Deal</button></div></div>
+      <div class="card">
+        <table>
+          <thead><tr><th>Deal Name</th><th>Client</th><th>Value</th><th>Type</th><th>Stage</th><th>Owner</th><th>Close Date</th><th>Revenue Forecast</th><th>Actions</th></tr></thead>
+          <tbody>
+            <tr><td class="td-name">TechCorp MSA 2026</td><td class="td-m">TechCorp India</td><td class="td-g">₹14L</td><td><span class="tag t-type">Retainer</span></td><td><span class="pill p-won">Won ✓</span></td><td class="td-m">You</td><td class="td-m">Jan 2026</td><td class="td-g">₹14L confirmed</td><td><button class="icon-btn" onclick="showToast('Deal opened','i')">👁</button></td></tr>
+            <tr><td class="td-name">Wipro Enterprise MSA</td><td class="td-m">Wipro Enterprise</td><td style="color:var(--warn);font-weight:600">₹22L</td><td><span class="tag t-type">MSA</span></td><td><span class="pill p-neg">Negotiation</span></td><td class="td-m">You</td><td class="td-m">Apr 2026</td><td style="color:var(--warn);font-weight:600">₹15.4L (70%)</td><td><button class="icon-btn" onclick="showToast('Deal opened','i')">👁</button></td></tr>
+            <tr><td class="td-name">HCL Staffing MSA</td><td class="td-m">HCL Technologies</td><td class="td-a">₹9L</td><td><span class="tag t-type">Contract</span></td><td><span class="pill p-won">Won ✓</span></td><td class="td-m">Deepak S</td><td class="td-m">Mar 2026</td><td class="td-g">₹9L confirmed</td><td><button class="icon-btn" onclick="showToast('Deal opened','i')">👁</button></td></tr>
+            <tr><td class="td-name">Tata Elxsi Q2</td><td class="td-m">Tata Elxsi</td><td style="color:var(--warn);font-weight:600">₹12L</td><td><span class="tag t-type">Project</span></td><td><span class="pill p-screen">Proposal Sent</span></td><td class="td-m">Priya K</td><td class="td-m">May 2026</td><td style="color:var(--muted)">₹6L (50%)</td><td><button class="icon-btn" onclick="showToast('Deal opened','i')">👁</button></td></tr>
+            <tr><td class="td-name">FinEdge Discovery</td><td class="td-m">FinEdge Solutions</td><td class="td-m">₹8L</td><td><span class="tag t-type">MSA</span></td><td><span class="pill p-lead">Lead</span></td><td class="td-m">You</td><td class="td-m">Jun 2026</td><td style="color:var(--muted)">₹2.4L (30%)</td><td><button class="icon-btn" onclick="showToast('Deal opened','i')">👁</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- Forecast -->
+      <div style="margin-top:16px" class="grid2">
+        <div class="card"><div class="ch"><span class="ch-title">Revenue Forecast by Quarter</span></div><div class="cb"><div class="bar-chart" style="height:90px"><div class="bg"><div class="b g" style="height:75%"></div><div class="b-l">Q1</div><div class="b-v">₹23L</div></div><div class="bg"><div class="b" style="height:90%"></div><div class="b-l">Q2</div><div class="b-v">₹28L</div></div><div class="bg"><div class="b o" style="height:55%"></div><div class="b-l">Q3 fcst</div><div class="b-v">₹18L</div></div><div class="bg"><div class="b p" style="height:40%"></div><div class="b-l">Q4 fcst</div><div class="b-v">₹13L</div></div></div></div></div>
+        <div class="card"><div class="ch"><span class="ch-title">Deal Stage Summary</span></div><div class="cb" style="display:flex;flex-direction:column;gap:8px"><div class="flex"><span style="font-size:12px;color:var(--muted);flex:1">Won</span><span style="font-weight:700;color:var(--a2)">₹23L</span></div><div class="flex"><span style="font-size:12px;color:var(--muted);flex:1">In Negotiation</span><span style="font-weight:700;color:var(--warn)">₹22L (wtd ₹15.4L)</span></div><div class="flex"><span style="font-size:12px;color:var(--muted);flex:1">Proposal Stage</span><span style="font-weight:700;color:var(--a1)">₹12L (wtd ₹6L)</span></div><div class="flex"><span style="font-size:12px;color:var(--muted);flex:1">Lead</span><span style="font-weight:700;color:var(--muted)">₹8L (wtd ₹2.4L)</span></div><div class="divider" style="margin:6px 0"></div><div class="flex"><span style="font-size:12.5px;font-weight:700;flex:1">Total Pipeline</span><span style="font-weight:800;color:var(--a2);font-family:var(--display)">₹65L (wtd ₹47L)</span></div></div></div>
+      </div>
+    </div>
+
+    <!-- ════ CONTACTS ════ -->
+    <div class="page" id="page-contacts">
+      <div class="flex mb-20"><div class="ml-a"><button class="btn btn-p btn-sm" onclick="openModal('addContact')">＋ Add Contact</button></div></div>
+      <div class="card">
+        <table>
+          <thead><tr><th>Name</th><th>Company</th><th>Title</th><th>Email</th><th>Phone</th><th>Last Touch</th><th>Next Action</th><th>Actions</th></tr></thead>
+          <tbody>
+            <tr onclick="showToast('Contact detail opened','i')" style="cursor:pointer"><td><div class="flex"><div class="av" style="width:24px;height:24px;font-size:8px;background:linear-gradient(135deg,#4f7cff,#00d4a8)">SK</div><div class="td-name">Sneha Kapoor</div></div></td><td class="td-m">TechCorp India</td><td class="td-m">VP Engineering</td><td class="td-m">sneha@techcorp.in</td><td class="td-m">+91-98200-12345</td><td class="td-m">2d ago · Email</td><td><span class="age-badge age-ok">Follow-up 5d</span></td><td><div class="flex"><button class="icon-btn" onclick="event.stopPropagation()">✉</button><button class="icon-btn" onclick="event.stopPropagation();showToast('Log call','i')">📞</button><button class="icon-btn" onclick="event.stopPropagation();showToast('Note added','s')">📝</button></div></td></tr>
+            <tr onclick="showToast('Contact detail opened','i')" style="cursor:pointer"><td><div class="flex"><div class="av" style="width:24px;height:24px;font-size:8px;background:linear-gradient(135deg,#b06aff,#4f7cff)">RN</div><div class="td-name">Ravi Nair</div></div></td><td class="td-m">HCL Technologies</td><td class="td-m">Talent Acquisition</td><td class="td-m">ravi.n@hcl.com</td><td class="td-m">+91-99110-45678</td><td class="td-m">1w ago · Call</td><td><span class="age-badge age-warn">Overdue 2d</span></td><td><div class="flex"><button class="icon-btn" onclick="event.stopPropagation()">✉</button><button class="icon-btn" onclick="event.stopPropagation();showToast('Call logged','s')">📞</button><button class="icon-btn" onclick="event.stopPropagation();showToast('Note added','s')">📝</button></div></td></tr>
+            <tr onclick="showToast('Contact detail opened','i')" style="cursor:pointer"><td><div class="flex"><div class="av" style="width:24px;height:24px;font-size:8px;background:linear-gradient(135deg,#ff6b35,#f5a623)">MJ</div><div class="td-name">Meera Joshi</div></div></td><td class="td-m">Wipro Enterprise</td><td class="td-m">Procurement Head</td><td class="td-m">meera.j@wipro.com</td><td class="td-m">+91-88001-34567</td><td class="td-m">Yesterday · Meeting</td><td><span class="age-badge age-ok">Meeting 3d</span></td><td><div class="flex"><button class="icon-btn" onclick="event.stopPropagation()">✉</button><button class="icon-btn" onclick="event.stopPropagation();showToast('Call logged','s')">📞</button><button class="icon-btn" onclick="event.stopPropagation();showToast('Note added','s')">📝</button></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ════ COMMUNICATIONS ════ -->
+    <div class="page" id="page-comms">
+      <div class="flex mb-14">
+        <div class="tabs"><button class="tab active">All</button><button class="tab">Email</button><button class="tab">WhatsApp</button><button class="tab">SMS</button><button class="tab">Notes</button></div>
+        <div class="ml-a"><button class="btn btn-p btn-sm" onclick="showToast('Compose window opened','i')">✉ Compose</button></div>
+      </div>
+      <div class="inbox-layout">
+        <!-- List -->
+        <div class="inbox-list">
+          <div class="inbox-hd"><span style="font-size:12px;font-weight:700">Conversations</span><span class="ml-a" style="font-size:10px;color:var(--a1)">5 unread</span></div>
+          <div class="conv-item active" onclick="selectConv(this)"><div class="conv-name"><span>Arjun Mehta</span><div class="unread-dot"></div><span class="conv-time">2m</span></div><div class="conv-preview">Sounds good, I can make Thursday 3PM work…</div></div>
+          <div class="conv-item" onclick="selectConv(this)"><div class="conv-name"><span>Sneha Kapoor</span><span class="conv-time">1h</span></div><div class="conv-preview">Please send 2-3 strong React profiles for…</div></div>
+          <div class="conv-item" onclick="selectConv(this)"><div class="conv-name"><span>Vijay Kumar</span><div class="unread-dot"></div><span class="conv-time">3h</span></div><div class="conv-preview">My current notice period is 30 days, can…</div></div>
+          <div class="conv-item" onclick="selectConv(this)"><div class="conv-name"><span>Meera Joshi</span><span class="conv-time">Yesterday</span></div><div class="conv-preview">Proposal looks good. We'll need legal to…</div></div>
+          <div class="conv-item" onclick="selectConv(this)"><div class="conv-name"><span>Karan Patel</span><div class="unread-dot"></div><span class="conv-time">2d</span></div><div class="conv-preview">Hi! Wanted to confirm my joining date for…</div></div>
+          <div class="conv-item" onclick="selectConv(this)"><div class="conv-name"><span>Ravi Nair</span><span class="conv-time">3d</span></div><div class="conv-preview">Can you share profiles for the SAP role…</div></div>
+        </div>
+        <!-- Chat -->
+        <div class="chat-area">
+          <div class="chat-hd">
+            <div class="av" style="width:32px;height:32px;font-size:11px;background:linear-gradient(135deg,#4f7cff,#b06aff)">AM</div>
+            <div style="flex:1"><div style="font-size:13px;font-weight:700">Arjun Mehta</div><div style="font-size:10.5px;color:var(--muted)">Sr. React Dev · Screening · arjun.m@email.com</div></div>
+            <div class="flex">
+              <button class="btn btn-g btn-xs" onclick="showToast('Interview scheduled','s')">📅 Schedule</button>
+              <button class="btn btn-g btn-xs" onclick="showToast('Profile submitted','s')">📤 Submit</button>
+              <button class="btn btn-p btn-xs" onclick="openCandDetail()">View Profile</button>
+            </div>
+          </div>
+          <div class="chat-msgs">
+            <div class="msg in"><div class="msg-bubble">Hi, I saw your message about the React developer role at TechCorp. I'm definitely interested. Can you share more details?</div><div class="msg-time">Mon, 10:15 AM</div></div>
+            <div class="msg out"><div class="msg-bubble">Hi Arjun! Great to connect. It's a Senior React + Node.js role at TechCorp India, Bangalore (Hybrid). ₹22–26 LPA for FT. They need 5+ years with TypeScript and MongoDB preferred. Does that fit your profile?</div><div class="msg-time">Mon, 10:32 AM</div></div>
+            <div class="msg in"><div class="msg-bubble">That aligns perfectly with my background. I have 5 years of React + Node, TypeScript is my primary stack, and I've used MongoDB extensively. Currently at ₹19.5L, expecting around 25+.</div><div class="msg-time">Mon, 11:04 AM</div></div>
+            <div class="msg out"><div class="msg-bubble">Perfect match! I'll submit your profile. Can we do a 20-min screening call tomorrow? I have slots at 11 AM or 3 PM.</div><div class="msg-time">Mon, 11:20 AM</div></div>
+            <div class="msg in"><div class="msg-bubble">Sounds good, I can make Thursday 3PM work if tomorrow is too soon — I have a commitment Wednesday.</div><div class="msg-time">Just now</div></div>
+          </div>
+          <div class="chat-actions">
+            <button class="btn btn-g btn-xs" onclick="showToast('Template: Interview invite sent','s')">📋 Templates</button>
+            <button class="btn btn-g btn-xs" onclick="showToast('Auto-follow-up set for 48h','s')">⏰ Auto follow-up</button>
+            <button class="btn btn-g btn-xs" onclick="showToast('AI draft generated','i')">✦ AI Draft</button>
+          </div>
+          <div class="chat-input-wrap">
+            <textarea class="chat-input" rows="1" placeholder="Type a message… (Enter to send)"></textarea>
+            <button class="btn btn-p btn-sm" onclick="showToast('Message sent','s')">Send ↑</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ OFFER & DOCS ════ -->
+    <div class="page" id="page-offers">
+      <div class="grid2 mb-20">
+        <!-- Offer Pipeline -->
+        <div class="card">
+          <div class="ch"><span class="ch-title">Offer Workflow</span><button class="btn btn-p btn-sm" onclick="openModal('genOffer')">＋ Generate Offer</button></div>
+          <div class="cb" style="padding:12px 18px">
+            <div class="wf-step" onclick="showToast('Offer generated for Anita Roy','s')">
+              <div class="wf-num">1</div>
+              <div class="wf-content"><div class="wf-title">Offer Generated</div><div class="wf-desc">Anita Roy · ₹30 LPA · TCS Digital · Full-time</div></div>
+              <span class="age-badge age-ok wf-badge">Done</span>
+            </div>
+            <div class="wf-step" onclick="showToast('Offer sent to candidate','s')">
+              <div class="wf-num">2</div>
+              <div class="wf-content"><div class="wf-title">Sent to Candidate</div><div class="wf-desc">Via email + WhatsApp · Sent 2 hrs ago</div></div>
+              <span class="age-badge age-ok wf-badge">Done</span>
+            </div>
+            <div class="wf-step" onclick="showToast('Awaiting e-signature','i')">
+              <div class="wf-num">3</div>
+              <div class="wf-content"><div class="wf-title">E-Signature Pending</div><div class="wf-desc">Candidate has 3 days to sign · Auto-reminder set</div></div>
+              <span class="age-badge age-warn wf-badge">Pending</span>
+            </div>
+            <div class="wf-step" style="opacity:.5">
+              <div class="wf-num">4</div>
+              <div class="wf-content"><div class="wf-title">Offer Accepted</div><div class="wf-desc">Trigger: update pipeline + notify client</div></div>
+              <span class="age-badge age-ok wf-badge" style="opacity:.5">—</span>
+            </div>
+            <div class="wf-step" style="opacity:.5">
+              <div class="wf-num">5</div>
+              <div class="wf-content"><div class="wf-title">Onboarding Initiated</div><div class="wf-desc">Send onboarding checklist + doc requests</div></div>
+              <span class="age-badge age-ok wf-badge" style="opacity:.5">—</span>
+            </div>
+          </div>
+        </div>
+        <!-- Document Status -->
+        <div class="card">
+          <div class="ch"><span class="ch-title">Document Collection — Anita Roy</span></div>
+          <div class="cb">
+            <div class="flex mb-14" style="align-items:flex-start">
+              <div><div style="font-size:14px;font-weight:700;margin-bottom:2px">Anita Roy · Full Stack Developer</div><div style="font-size:11.5px;color:var(--muted)">Joining: TCS Digital · Joining date: Apr 15, 2026</div></div>
+              <div class="ml-a"><div style="font-size:11px;color:var(--a2);font-weight:600">4 / 7 docs received</div></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <div class="flex"><span class="age-badge age-ok">✓</span><span style="font-size:12px;margin-left:8px;flex:1">Resume / CV</span><span style="font-size:11px;color:var(--a2)">Received</span></div>
+              <div class="flex"><span class="age-badge age-ok">✓</span><span style="font-size:12px;margin-left:8px;flex:1">Offer Letter (signed)</span><span style="font-size:11px;color:var(--a2)">Received</span></div>
+              <div class="flex"><span class="age-badge age-ok">✓</span><span style="font-size:12px;margin-left:8px;flex:1">PAN Card</span><span style="font-size:11px;color:var(--a2)">Received</span></div>
+              <div class="flex"><span class="age-badge age-ok">✓</span><span style="font-size:12px;margin-left:8px;flex:1">Aadhar / ID Proof</span><span style="font-size:11px;color:var(--a2)">Received</span></div>
+              <div class="flex"><span class="age-badge age-warn">⏳</span><span style="font-size:12px;margin-left:8px;flex:1;color:var(--muted2)">Last 3 Months Payslips</span><span style="font-size:11px;color:var(--warn)">Pending</span></div>
+              <div class="flex"><span class="age-badge age-warn">⏳</span><span style="font-size:12px;margin-left:8px;flex:1;color:var(--muted2)">Education Certificates</span><span style="font-size:11px;color:var(--warn)">Pending</span></div>
+              <div class="flex"><span class="age-badge age-danger">!</span><span style="font-size:12px;margin-left:8px;flex:1;color:var(--muted2)">Experience Letters</span><span style="font-size:11px;color:var(--danger)">Overdue</span></div>
+            </div>
+            <button class="btn btn-g btn-sm" style="margin-top:12px;width:100%" onclick="showToast('Reminder sent to Anita Roy','s')">📤 Send Reminder for Pending Docs</button>
+          </div>
+        </div>
+      </div>
+      <!-- Offer Drop-off Analysis -->
+      <div class="card">
+        <div class="ch"><span class="ch-title">Offer Drop-off Analysis</span></div>
+        <div class="cb">
+          <div class="grid3">
+            <div><div class="s-lbl">Offers Sent (MTD)</div><div style="font-family:var(--display);font-size:22px;font-weight:800">15</div></div>
+            <div><div class="s-lbl">Accepted</div><div style="font-family:var(--display);font-size:22px;font-weight:800;color:var(--a2)">11</div></div>
+            <div><div class="s-lbl">Declined / Drop</div><div style="font-family:var(--display);font-size:22px;font-weight:800;color:var(--danger)">4</div></div>
+          </div>
+          <div class="divider"></div>
+          <div class="s-title">Drop Reasons</div>
+          <div style="display:flex;flex-direction:column;gap:7px">
+            <div class="funnel-row"><span class="f-l">Counter-offer</span><div class="f-bar" style="width:55%;background:var(--danger)">2 drops</div></div>
+            <div class="funnel-row"><span class="f-l">Rate mismatch</span><div class="f-bar" style="width:27%;background:var(--warn)">1 drop</div></div>
+            <div class="funnel-row"><span class="f-l">Location issue</span><div class="f-bar" style="width:27%;background:var(--muted)">1 drop</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ WORKFLOWS ════ -->
+    <div class="page" id="page-workflows">
+      <div class="flex mb-20">
+        <div style="font-family:var(--display);font-size:18px;font-weight:800">⚡ Automation Workflows</div>
+        <div class="ml-a"><button class="btn btn-p btn-sm" onclick="showToast('Workflow builder opened','i')">＋ New Workflow</button></div>
+      </div>
+      <div class="grid2">
+        <div>
+          <div class="s-title">Active Triggers</div>
+          <div class="wf-trigger"><span class="wf-trigger-ic">👤</span><div style="flex:1"><div style="font-size:12.5px;font-weight:600">New Candidate Added → Auto-screening email</div><div style="font-size:11px;color:var(--muted)">Fires when candidate stage = Sourced</div></div><div class="wf-toggle on" onclick="toggleWF(this)"></div></div>
+          <div class="wf-trigger"><span class="wf-trigger-ic">📋</span><div style="flex:1"><div style="font-size:12.5px;font-weight:600">Submitted to Client → Auto-WhatsApp to candidate</div><div style="font-size:11px;color:var(--muted)">Notify candidate with interview tips template</div></div><div class="wf-toggle on" onclick="toggleWF(this)"></div></div>
+          <div class="wf-trigger"><span class="wf-trigger-ic">📅</span><div style="flex:1"><div style="font-size:12.5px;font-weight:600">Interview Scheduled → Calendar invite both parties</div><div style="font-size:11px;color:var(--muted)">Google Calendar + email confirmation</div></div><div class="wf-toggle on" onclick="toggleWF(this)"></div></div>
+          <div class="wf-trigger"><span class="wf-trigger-ic">✦</span><div style="flex:1"><div style="font-size:12.5px;font-weight:600">Job posted → AI Match runs automatically</div><div style="font-size:11px;color:var(--muted)">Scores all active candidates vs new JD</div></div><div class="wf-toggle on" onclick="toggleWF(this)"></div></div>
+          <div class="wf-trigger"><span class="wf-trigger-ic">📄</span><div style="flex:1"><div style="font-size:12.5px;font-weight:600">Offer Accepted → Onboarding checklist triggered</div><div style="font-size:11px;color:var(--muted)">Send doc collection + joining confirmation</div></div><div class="wf-toggle on" onclick="toggleWF(this)"></div></div>
+          <div class="wf-trigger"><span class="wf-trigger-ic">🔔</span><div style="flex:1"><div style="font-size:12.5px;font-weight:600">Client dormant 30d → BD reminder triggered</div><div style="font-size:11px;color:var(--muted)">Task assigned to account manager</div></div><div class="wf-toggle" onclick="toggleWF(this)"></div></div>
+          <div class="wf-trigger"><span class="wf-trigger-ic">⏰</span><div style="flex:1"><div style="font-size:12.5px;font-weight:600">Placed candidate 30d check-in email</div><div style="font-size:11px;color:var(--muted)">Automated warm-touch for placed candidates</div></div><div class="wf-toggle on" onclick="toggleWF(this)"></div></div>
+          <div class="wf-trigger"><span class="wf-trigger-ic">📊</span><div style="flex:1"><div style="font-size:12.5px;font-weight:600">Weekly recruiter report → email every Monday</div><div style="font-size:11px;color:var(--muted)">Pipeline health + placements + pending tasks</div></div><div class="wf-toggle on" onclick="toggleWF(this)"></div></div>
+        </div>
+        <div>
+          <div class="s-title">Workflow Stats</div>
+          <div class="scard b mb-8"><div class="s-lbl">Automations run this month</div><div class="s-val">384</div><div class="s-sub">Saved ~<span class="up">48 hours</span> of manual work</div></div>
+          <div class="scard g mb-8"><div class="s-lbl">Email sequences active</div><div class="s-val">7</div><div class="s-sub">Avg open rate <span class="up">68%</span></div></div>
+          <div class="s-title" style="margin-top:14px">Integration Status</div>
+          <div class="card" style="padding:0">
+            <div style="padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px"><span style="font-size:16px">✉</span><div style="flex:1"><div style="font-size:12.5px;font-weight:600">Gmail / Google Workspace</div><div style="font-size:10.5px;color:var(--muted)">Connected · 2-way sync active</div></div><span style="font-size:11px;color:var(--a2);font-weight:700">✓ Live</span></div>
+            <div style="padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px"><span style="font-size:16px">💬</span><div style="flex:1"><div style="font-size:12.5px;font-weight:600">WhatsApp Business API</div><div style="font-size:10.5px;color:var(--muted)">Connected · 347 msgs this month</div></div><span style="font-size:11px;color:var(--a2);font-weight:700">✓ Live</span></div>
+            <div style="padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px"><span style="font-size:16px">📅</span><div style="flex:1"><div style="font-size:12.5px;font-weight:600">Google Calendar</div><div style="font-size:10.5px;color:var(--muted)">Connected · Interview sync enabled</div></div><span style="font-size:11px;color:var(--a2);font-weight:700">✓ Live</span></div>
+            <div style="padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px"><span style="font-size:16px">💼</span><div style="flex:1"><div style="font-size:12.5px;font-weight:600">LinkedIn Recruiter</div><div style="font-size:10.5px;color:var(--muted)">API connected · Profile import enabled</div></div><span style="font-size:11px;color:var(--a2);font-weight:700">✓ Live</span></div>
+            <div style="padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px"><span style="font-size:16px">✍</span><div style="flex:1"><div style="font-size:12.5px;font-weight:600">DocuSign / e-Signature</div><div style="font-size:10.5px;color:var(--muted)">Connected · Offer letters + MSA signing</div></div><span style="font-size:11px;color:var(--a2);font-weight:700">✓ Live</span></div>
+            <div style="padding:10px 16px;display:flex;align-items:center;gap:9px"><span style="font-size:16px">🏢</span><div style="flex:1"><div style="font-size:12.5px;font-weight:600">Naukri / Indeed Import</div><div style="font-size:10.5px;color:var(--muted)">Configured · Auto-parse new applicants</div></div><span style="font-size:11px;color:var(--a2);font-weight:700">✓ Live</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ ANALYTICS ════ -->
+    <div class="page" id="page-analytics">
+      <div class="stats-row mb-20">
+        <div class="scard b"><div class="s-lbl">Revenue YTD</div><div class="s-val">₹42L</div><div class="s-sub"><span class="up">↑ 28%</span> vs LY</div></div>
+        <div class="scard g"><div class="s-lbl">Placements YTD</div><div class="s-val">47</div><div class="s-sub"><span class="up">↑ 14</span> vs LY</div></div>
+        <div class="scard o"><div class="s-lbl">Time-to-Fill Avg</div><div class="s-val">18d</div><div class="s-sub"><span class="up">↓ 6d</span> improvement</div></div>
+        <div class="scard p"><div class="s-lbl">Client Retention</div><div class="s-val">87%</div><div class="s-sub"><span class="up">↑ 5%</span> vs LY</div></div>
+      </div>
+
+      <div class="analytics-grid mb-14">
+        <div class="card"><div class="ch"><span class="ch-title">Placements by Month</span></div><div class="cb"><div class="bar-chart"><div class="bg"><div class="b" style="height:45%"></div><div class="b-l">Jan</div><div class="b-v">5</div></div><div class="bg"><div class="b" style="height:60%"></div><div class="b-l">Feb</div><div class="b-v">7</div></div><div class="bg"><div class="b g" style="height:85%"></div><div class="b-l">Mar</div><div class="b-v">11</div></div><div class="bg"><div class="b" style="height:25%;opacity:.4"></div><div class="b-l">Apr</div><div class="b-v">—</div></div><div class="bg"><div class="b" style="height:15%;opacity:.3"></div><div class="b-l">May</div><div class="b-v">—</div></div></div></div></div>
+        <div class="card"><div class="ch"><span class="ch-title">Source Effectiveness</span></div><div class="cb"><div class="donut-wrap"><div class="donut"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--s3)" stroke-width="3.5"/><circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--a1)" stroke-width="3.5" stroke-dasharray="38 62"/><circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--a2)" stroke-width="3.5" stroke-dasharray="24 76" stroke-dashoffset="-38"/><circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--a4)" stroke-width="3.5" stroke-dasharray="22 78" stroke-dashoffset="-62"/><circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--warn)" stroke-width="3.5" stroke-dasharray="16 84" stroke-dashoffset="-84"/></svg><div class="donut-center"><span style="font-size:16px;font-weight:900;font-family:var(--display)">47</span><span style="font-size:8px;color:var(--muted)">placed</span></div></div><div class="legend"><div class="li2"><div class="ld" style="background:var(--a1)"></div>LinkedIn 38%</div><div class="li2"><div class="ld" style="background:var(--a2)"></div>Naukri 24%</div><div class="li2"><div class="ld" style="background:var(--a4)"></div>Referral 22%</div><div class="li2"><div class="ld" style="background:var(--warn)"></div>Direct 16%</div></div></div></div></div>
+      </div>
+
+      <div class="analytics-grid mb-14">
+        <div class="card"><div class="ch"><span class="ch-title">Funnel Conversion (Q1 2026)</span></div><div class="cb"><div class="funnel-row"><span class="f-l">Sourced</span><div class="f-bar" style="width:96%;background:var(--a1)">84</div></div><div class="funnel-row"><span class="f-l">Screened</span><div class="f-bar" style="width:62%;background:var(--a4)">52</div></div><div class="funnel-row"><span class="f-l">Submitted</span><div class="f-bar" style="width:38%;background:var(--warn)">32</div></div><div class="funnel-row"><span class="f-l">Interviewed</span><div class="f-bar" style="width:17%;background:var(--a3)">14</div></div><div class="funnel-row"><span class="f-l">Placed</span><div class="f-bar" style="width:12%;background:var(--a2)">11</div></div><div style="font-size:11px;color:var(--muted);margin-top:10px">Conversion: <strong style="color:var(--a2)">13.1%</strong> · OAR: <strong style="color:var(--a1)">74%</strong> · Avg TTF: <strong style="color:var(--warn)">18d</strong></div></div></div>
+        <div class="card"><div class="ch"><span class="ch-title">Revenue by Client</span></div><div class="cb"><div class="bar-chart"><div class="bg"><div class="b g" style="height:76%"></div><div class="b-l">TechCorp</div><div class="b-v">₹14L</div></div><div class="bg"><div class="b g" style="height:58%"></div><div class="b-l">Wipro</div><div class="b-v">₹11L</div></div><div class="bg"><div class="b g" style="height:46%"></div><div class="b-l">HCL</div><div class="b-v">₹9L</div></div><div class="bg"><div class="b g" style="height:30%"></div><div class="b-l">Tata Elxsi</div><div class="b-v">₹6L</div></div><div class="bg"><div class="b g" style="height:12%"></div><div class="b-l">FinEdge</div><div class="b-v">₹2L</div></div></div></div></div>
+      </div>
+
+      <!-- Aging Analysis -->
+      <div class="grid2">
+        <div class="card"><div class="ch"><span class="ch-title">Job Order Aging Analysis</span></div><div class="cb"><div style="display:flex;flex-direction:column;gap:8px"><div class="flex"><span style="font-size:12px;flex:1">0–7 days (Healthy)</span><span class="age-badge age-ok">6 jobs</span></div><div class="flex"><span style="font-size:12px;flex:1">8–21 days (Watch)</span><span class="age-badge age-warn">8 jobs</span></div><div class="flex"><span style="font-size:12px;flex:1">22–45 days (At risk)</span><span class="age-badge age-danger">3 jobs</span></div><div class="flex"><span style="font-size:12px;flex:1">45+ days (Stale)</span><span class="age-badge age-danger">1 job</span></div></div></div></div>
+        <div class="card"><div class="ch"><span class="ch-title">Bench Utilization</span></div><div class="cb"><div style="font-family:var(--display);font-size:11px;font-weight:700;color:var(--muted);margin-bottom:10px">CONTRACT BENCH</div><div style="display:flex;flex-direction:column;gap:8px"><div class="flex"><span style="font-size:12px;flex:1">Deployed (active billing)</span><span style="font-weight:700;color:var(--a2)">12 contractors</span></div><div class="flex"><span style="font-size:12px;flex:1">On bench (available)</span><span style="font-weight:700;color:var(--warn)">4 contractors</span></div><div class="flex"><span style="font-size:12px;flex:1">Bench utilization</span><span style="font-weight:700;color:var(--a1)">75%</span></div><div class="flex"><span style="font-size:12px;flex:1">Avg bench duration</span><span style="font-weight:700;color:var(--muted)">11 days</span></div></div></div></div>
+      </div>
+    </div>
+
+    <!-- ════ RECRUITER KPIs ════ -->
+    <div class="page" id="page-recruiter">
+      <div class="stats-row mb-20">
+        <div class="scard b"><div class="s-lbl">Total Submittals (MTD)</div><div class="s-val">38</div><div class="s-sub"><span class="up">↑ 8</span> vs last month</div></div>
+        <div class="scard g"><div class="s-lbl">Closures (MTD)</div><div class="s-val">11</div><div class="s-sub">Close rate <span class="up">29%</span></div></div>
+        <div class="scard o"><div class="s-lbl">Avg Days-per-Close</div><div class="s-val">18d</div><div class="s-sub">Best: <span class="up">12d (Priya)</span></div></div>
+        <div class="scard r"><div class="s-lbl">Aging Pipeline (>21d)</div><div class="s-val">9</div><div class="s-sub"><span class="down">3 critical</span> need action</div></div>
+      </div>
+
+      <div class="grid2 mb-14">
+        <div class="card">
+          <div class="ch"><span class="ch-title">Recruiter Leaderboard</span><span style="font-size:11px;color:var(--muted)">This month</span></div>
+          <div class="cb" style="padding:10px 18px">
+            <div class="rec-row">
+              <div class="rec-rank">1</div>
+              <div class="av" style="width:28px;height:28px;font-size:10px;background:linear-gradient(135deg,#f5a623,#ff6b35)">PK</div>
+              <div class="rec-info"><div class="rec-name">Priya K</div><div class="rec-stat">6 closures · 18 submittals · Avg 12d TTF</div></div>
+              <div class="rec-bar-wrap"><div class="rec-bar" style="width:100%"></div></div>
+              <div class="rec-val">6</div>
+            </div>
+            <div class="rec-row">
+              <div class="rec-rank">2</div>
+              <div class="av" style="width:28px;height:28px;font-size:10px;background:linear-gradient(135deg,#b06aff,#4f7cff)">DS</div>
+              <div class="rec-info"><div class="rec-name">Deepak S</div><div class="rec-stat">3 closures · 12 submittals · Avg 22d TTF</div></div>
+              <div class="rec-bar-wrap"><div class="rec-bar" style="width:50%"></div></div>
+              <div class="rec-val">3</div>
+            </div>
+            <div class="rec-row">
+              <div class="rec-rank">3</div>
+              <div class="av" style="width:28px;height:28px;font-size:10px;background:linear-gradient(135deg,#4f7cff,#b06aff)">RS</div>
+              <div class="rec-info"><div class="rec-name">Rahul S (You)</div><div class="rec-stat">2 closures · 8 submittals · Avg 19d TTF</div></div>
+              <div class="rec-bar-wrap"><div class="rec-bar" style="width:33%"></div></div>
+              <div class="rec-val">2</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ch"><span class="ch-title">Submittals per Recruiter</span></div>
+          <div class="cb"><div class="bar-chart"><div class="bg"><div class="b p" style="height:100%"></div><div class="b-l">Priya K</div><div class="b-v">18</div></div><div class="bg"><div class="b" style="height:67%"></div><div class="b-l">Deepak S</div><div class="b-v">12</div></div><div class="bg"><div class="b g" style="height:44%"></div><div class="b-l">Rahul S</div><div class="b-v">8</div></div></div></div>
+        </div>
+      </div>
+
+      <!-- Recruiter Drilldown -->
+      <div class="card">
+        <div class="ch"><span class="ch-title">Recruiter Performance Drilldown — Priya K</span><div class="tabs" style="background:transparent;border:none;padding:0"><button class="tab active" style="font-size:11px">This Month</button><button class="tab" style="font-size:11px">Q1</button><button class="tab" style="font-size:11px">YTD</button></div></div>
+        <div class="cb">
+          <div class="grid3">
+            <div><div class="s-lbl">Sourced</div><div style="font-family:var(--display);font-size:20px;font-weight:800">24</div></div>
+            <div><div class="s-lbl">Submitted</div><div style="font-family:var(--display);font-size:20px;font-weight:800;color:var(--a1)">18</div></div>
+            <div><div class="s-lbl">Interviews Arranged</div><div style="font-family:var(--display);font-size:20px;font-weight:800;color:var(--warn)">9</div></div>
+            <div><div class="s-lbl">Offers Extended</div><div style="font-family:var(--display);font-size:20px;font-weight:800;color:var(--a3)">7</div></div>
+            <div><div class="s-lbl">Placements</div><div style="font-family:var(--display);font-size:20px;font-weight:800;color:var(--a2)">6</div></div>
+            <div><div class="s-lbl">Revenue Generated</div><div style="font-family:var(--display);font-size:20px;font-weight:800;color:var(--a4)">₹22L</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ RBAC ════ -->
+    <div class="page" id="page-rbac">
+      <div class="flex mb-20">
+        <div style="font-family:var(--display);font-size:18px;font-weight:800">🔐 Roles & Access Control</div>
+        <div class="ml-a"><button class="btn btn-p btn-sm" onclick="showToast('New role form opened','i')">＋ New Role</button></div>
+      </div>
+      <!-- Team Members -->
+      <div class="card mb-20">
+        <div class="ch"><span class="ch-title">Team Members</span><button class="btn btn-p btn-sm" onclick="showToast('Invite link sent','s')">+ Invite Member</button></div>
+        <table>
+          <thead><tr><th>Member</th><th>Email</th><th>Role</th><th>Status</th><th>Last Active</th><th>Actions</th></tr></thead>
+          <tbody>
+            <tr><td><div class="flex"><div class="av" style="width:26px;height:26px;font-size:9px;background:linear-gradient(135deg,#4f7cff,#b06aff)">RS</div><div class="td-name">Rahul Sharma</div></div></td><td class="td-m">rahul@nexus.co</td><td><span class="tag t-p">Admin</span></td><td><span class="pill p-active">Active</span></td><td class="td-m">Now</td><td><button class="icon-btn btn-sm" onclick="showToast('Edit role','i')">⚙</button></td></tr>
+            <tr><td><div class="flex"><div class="av" style="width:26px;height:26px;font-size:9px;background:linear-gradient(135deg,#f5a623,#ff6b35)">PK</div><div class="td-name">Priya Kapoor</div></div></td><td class="td-m">priya@nexus.co</td><td><span class="tag t-tech">Recruiter</span></td><td><span class="pill p-active">Active</span></td><td class="td-m">2 min ago</td><td><button class="icon-btn btn-sm" onclick="showToast('Edit role','i')">⚙</button></td></tr>
+            <tr><td><div class="flex"><div class="av" style="width:26px;height:26px;font-size:9px;background:linear-gradient(135deg,#b06aff,#4f7cff)">DS</div><div class="td-name">Deepak Sethi</div></div></td><td class="td-m">deepak@nexus.co</td><td><span class="tag t-tech">BD Manager</span></td><td><span class="pill p-active">Active</span></td><td class="td-m">1 hr ago</td><td><button class="icon-btn btn-sm" onclick="showToast('Edit role','i')">⚙</button></td></tr>
+            <tr><td><div class="flex"><div class="av" style="width:26px;height:26px;font-size:9px;background:linear-gradient(135deg,#00d4a8,#4f7cff)">MV</div><div class="td-name">Maya Verma</div></div></td><td class="td-m">maya@nexus.co</td><td><span class="tag" style="background:rgba(245,166,35,.12);color:var(--warn)">Viewer</span></td><td><span class="pill p-interview">Invited</span></td><td class="td-m">—</td><td><button class="icon-btn btn-sm" onclick="showToast('Resend invite','s')">↻</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- Role Definitions -->
+      <div class="s-title">Role Permissions Matrix</div>
+      <div class="role-card"><div class="role-hd"><div class="role-badge" style="background:rgba(176,106,255,.15);color:var(--a4)">Admin</div><div style="font-size:12px;color:var(--muted);margin-left:8px">Full system access · Can manage users, billing, settings</div></div><div class="perm-grid"><div class="perm on"><span class="perm-ic">✓</span> View all data</div><div class="perm on"><span class="perm-ic">✓</span> Edit all data</div><div class="perm on"><span class="perm-ic">✓</span> Delete records</div><div class="perm on"><span class="perm-ic">✓</span> Manage users</div><div class="perm on"><span class="perm-ic">✓</span> Export data</div><div class="perm on"><span class="perm-ic">✓</span> View analytics</div><div class="perm on"><span class="perm-ic">✓</span> Manage workflows</div><div class="perm on"><span class="perm-ic">✓</span> Billing access</div><div class="perm on"><span class="perm-ic">✓</span> Audit log</div></div></div>
+      <div class="role-card"><div class="role-hd"><div class="role-badge" style="background:rgba(79,124,255,.15);color:var(--a1)">Recruiter</div><div style="font-size:12px;color:var(--muted);margin-left:8px">Own candidates + assigned jobs · No billing or user mgmt</div></div><div class="perm-grid"><div class="perm on"><span class="perm-ic">✓</span> View candidates</div><div class="perm on"><span class="perm-ic">✓</span> Edit own records</div><div class="perm off"><span class="perm-ic">✗</span> Delete records</div><div class="perm off"><span class="perm-ic">✗</span> Manage users</div><div class="perm on"><span class="perm-ic">✓</span> Export own data</div><div class="perm on"><span class="perm-ic">✓</span> Own analytics</div><div class="perm off"><span class="perm-ic">✗</span> Manage workflows</div><div class="perm off"><span class="perm-ic">✗</span> Billing access</div><div class="perm off"><span class="perm-ic">✗</span> Audit log</div></div></div>
+      <div class="role-card"><div class="role-hd"><div class="role-badge" style="background:rgba(245,166,35,.12);color:var(--warn)">BD Manager</div><div style="font-size:12px;color:var(--muted);margin-left:8px">Clients, deals, contacts · Limited ATS access</div></div><div class="perm-grid"><div class="perm on"><span class="perm-ic">✓</span> View clients</div><div class="perm on"><span class="perm-ic">✓</span> Edit deals</div><div class="perm off"><span class="perm-ic">✗</span> Delete records</div><div class="perm off"><span class="perm-ic">✗</span> Manage users</div><div class="perm on"><span class="perm-ic">✓</span> Export reports</div><div class="perm on"><span class="perm-ic">✓</span> Revenue analytics</div><div class="perm off"><span class="perm-ic">✗</span> Manage workflows</div><div class="perm off"><span class="perm-ic">✗</span> Billing access</div><div class="perm off"><span class="perm-ic">✗</span> Audit log</div></div></div>
+    </div>
+
+    <!-- ════ AUDIT LOG ════ -->
+    <div class="page" id="page-audit">
+      <div class="flex mb-20">
+        <div style="font-family:var(--display);font-size:18px;font-weight:800">📋 Audit Log</div>
+        <div class="ml-a flex">
+          <select class="fi" style="width:160px;margin-right:8px"><option>All Users</option><option>Priya K</option><option>Deepak S</option></select>
+          <button class="btn btn-g btn-sm" onclick="showToast('Log exported to CSV','s')">⬇ Export CSV</button>
+        </div>
+      </div>
+      <div class="card">
+        <table>
+          <thead><tr><th>Timestamp</th><th>User</th><th>Action</th><th>Entity</th><th>Details</th><th>IP Address</th></tr></thead>
+          <tbody>
+            <tr><td class="td-m">29 Mar 2026, 14:32</td><td><div class="flex"><div class="av" style="width:20px;height:20px;font-size:8px;background:linear-gradient(135deg,#4f7cff,#b06aff)">RS</div><span style="font-size:12px">Rahul S</span></div></td><td><span class="tag t-tech">MOVE</span></td><td style="font-size:12px">Arjun Mehta</td><td class="td-m">Moved Sourced → Screening</td><td class="td-m">192.168.1.1</td></tr>
+            <tr><td class="td-m">29 Mar 2026, 13:55</td><td><div class="flex"><div class="av" style="width:20px;height:20px;font-size:8px;background:linear-gradient(135deg,#f5a623,#ff6b35)">PK</div><span style="font-size:12px">Priya K</span></div></td><td><span class="tag t-type">CREATE</span></td><td style="font-size:12px">Job Order</td><td class="td-m">Created: Senior DevOps → Infosys</td><td class="td-m">10.0.0.4</td></tr>
+            <tr><td class="td-m">29 Mar 2026, 11:20</td><td><div class="flex"><div class="av" style="width:20px;height:20px;font-size:8px;background:linear-gradient(135deg,#b06aff,#4f7cff)">DS</div><span style="font-size:12px">Deepak S</span></div></td><td><span class="tag t-hot">UPDATE</span></td><td style="font-size:12px">Deal</td><td class="td-m">Wipro MSA → Negotiation stage</td><td class="td-m">10.0.0.7</td></tr>
+            <tr><td class="td-m">29 Mar 2026, 09:15</td><td><div class="flex"><div class="av" style="width:20px;height:20px;font-size:8px;background:linear-gradient(135deg,#4f7cff,#b06aff)">RS</div><span style="font-size:12px">Rahul S</span></div></td><td><span class="tag t-type">SEND</span></td><td style="font-size:12px">Offer Letter</td><td class="td-m">Offer sent to Anita Roy · ₹30L</td><td class="td-m">192.168.1.1</td></tr>
+            <tr><td class="td-m">28 Mar 2026, 16:48</td><td><span class="td-m">🤖 System</span></td><td><span class="tag t-p">AUTO</span></td><td style="font-size:12px">Automation</td><td class="td-m">30-day check-in sent to 3 placed candidates</td><td class="td-m">—</td></tr>
+            <tr><td class="td-m">28 Mar 2026, 14:00</td><td><div class="flex"><div class="av" style="width:20px;height:20px;font-size:8px;background:linear-gradient(135deg,#f5a623,#ff6b35)">PK</div><span style="font-size:12px">Priya K</span></div></td><td><span class="tag t-type">CREATE</span></td><td style="font-size:12px">Candidate</td><td class="td-m">Added Kavita Joshi (Data Engineer)</td><td class="td-m">10.0.0.4</td></tr>
+            <tr><td class="td-m">28 Mar 2026, 11:30</td><td><div class="flex"><div class="av" style="width:20px;height:20px;font-size:8px;background:linear-gradient(135deg,#4f7cff,#b06aff)">RS</div><span style="font-size:12px">Rahul S</span></div></td><td><span class="tag t-urg">DELETE</span></td><td style="font-size:12px">Contact</td><td class="td-m">Deleted duplicate contact: Old Ravi N entry</td><td class="td-m">192.168.1.1</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- end .content -->
+</div><!-- end .main -->
+
+<!-- ════════════ CANDIDATE DETAIL PANEL ════════════ -->
+<div class="panel" id="candPanel">
+  <div class="panel-hd">
+    <div class="av" style="width:38px;height:38px;font-size:13px;background:linear-gradient(135deg,#4f7cff,#b06aff);flex-shrink:0">AM</div>
+    <div style="flex:1"><div class="panel-title">Arjun Mehta</div><div style="font-size:11.5px;color:var(--muted)">Sr. React Dev · 5 yrs · Bangalore</div></div>
+    <button class="close-btn" onclick="closePanel('candPanel')">✕</button>
+  </div>
+  <div class="panel-body">
+    <div class="flex mb-14">
+      <div class="kc-tags" style="flex:1">
+        <span class="tag t-tech">React</span><span class="tag t-tech">Node.js</span><span class="tag t-tech">TypeScript</span><span class="tag t-tech">MongoDB</span><span class="tag t-type">Full-time</span>
+      </div>
+      <span class="pill p-screen">Screening</span>
+    </div>
+    <!-- AI Match Ring -->
+    <div class="ai-ring-wrap">
+      <div class="ai-ring">
+        <svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--s3)" stroke-width="3.5"/><circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--a2)" stroke-width="3.5" stroke-dasharray="91 9" stroke-linecap="round"/></svg>
+        <div class="center"><span class="pct" style="color:var(--a2)">91%</span><span class="lbl">AI Match</span></div>
+      </div>
+      <div class="match-reasons" style="flex:1">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px">Match breakdown — React Dev @ TechCorp</div>
+        <div class="mr"><span class="mr-lbl">Tech skills</span><div class="mr-bar"><div class="mr-fill" style="width:96%"></div></div><span class="mr-val">96%</span></div>
+        <div class="mr"><span class="mr-lbl">Experience</span><div class="mr-bar"><div class="mr-fill" style="width:90%"></div></div><span class="mr-val">90%</span></div>
+        <div class="mr"><span class="mr-lbl">Rate fit</span><div class="mr-bar"><div class="mr-fill" style="width:88%"></div></div><span class="mr-val">88%</span></div>
+        <div class="mr"><span class="mr-lbl">Notice</span><div class="mr-bar"><div class="mr-fill med" style="width:70%"></div></div><span class="mr-val" style="color:var(--warn)">70%</span></div>
+      </div>
+    </div>
+
+    <div class="panel-tabs">
+      <button class="pt active" onclick="switchPT(this,'pt-overview')">Overview</button>
+      <button class="pt" onclick="switchPT(this,'pt-timeline')">Timeline</button>
+      <button class="pt" onclick="switchPT(this,'pt-comms')">Comms</button>
+      <button class="pt" onclick="switchPT(this,'pt-docs')">Docs</button>
+    </div>
+
+    <div class="panel-section active" id="pt-overview">
+      <div class="info-grid">
+        <div class="ii"><div class="ii-l">Email</div><div class="ii-v text-a1" style="font-size:11.5px">arjun.m@email.com</div></div>
+        <div class="ii"><div class="ii-l">Phone</div><div class="ii-v" style="font-size:12px">+91-98200-11111</div></div>
+        <div class="ii"><div class="ii-l">Current CTC</div><div class="ii-v">₹20 LPA</div></div>
+        <div class="ii"><div class="ii-l">Expected CTC</div><div class="ii-v text-a1">₹22–26 LPA</div></div>
+        <div class="ii"><div class="ii-l">Notice Period</div><div class="ii-v">30 days</div></div>
+        <div class="ii"><div class="ii-l">Location</div><div class="ii-v">Bangalore</div></div>
+        <div class="ii"><div class="ii-l">Source</div><div class="ii-v">LinkedIn</div></div>
+        <div class="ii"><div class="ii-l">Recruiter</div><div class="ii-v">Priya K</div></div>
+      </div>
+      <div class="divider"></div>
+      <div class="s-title">Actions</div>
+      <div style="display:flex;flex-wrap:wrap;gap:7px">
+        <button class="btn btn-g btn-sm" onclick="showToast('Email draft opened','i')">✉ Email</button>
+        <button class="btn btn-g btn-sm" onclick="showToast('WhatsApp opened','i')">💬 WhatsApp</button>
+        <button class="btn btn-g btn-sm" onclick="showToast('Interview scheduled','s')">📅 Schedule</button>
+        <button class="btn btn-g btn-sm" onclick="showToast('Profile submitted to TechCorp','s')">📤 Submit to Client</button>
+        <button class="btn btn-p btn-sm" onclick="showToast('Stage advanced','s')">→ Move Stage</button>
+      </div>
+    </div>
+
+    <div class="panel-section" id="pt-timeline">
+      <div class="tl">
+        <div class="tli"><div class="tl-dot g"></div><div class="tl-c"><div class="tl-act">Moved to Screening — AI score: <strong>91%</strong> for TechCorp React Dev role</div><div class="tl-m">Priya K · Today, 10:30 AM</div></div></div>
+        <div class="tli"><div class="tl-dot p"></div><div class="tl-c"><div class="tl-act">Phone screening completed — strong comm skills, TypeScript expert, notice 30d</div><div class="tl-m">Priya K · Yesterday, 3:00 PM</div></div></div>
+        <div class="tli"><div class="tl-dot"></div><div class="tl-c"><div class="tl-act">WhatsApp intro sent — candidate responded within 10 min</div><div class="tl-m">System · 3 days ago</div></div></div>
+        <div class="tli"><div class="tl-dot g"></div><div class="tl-c"><div class="tl-act">Profile sourced from LinkedIn · Parsed 47 fields auto-extracted</div><div class="tl-m">System · 4 days ago</div></div></div>
+      </div>
+    </div>
+
+    <div class="panel-section" id="pt-comms">
+      <div style="font-size:12.5px;font-weight:600;margin-bottom:10px">Last 5 messages across all channels</div>
+      <div class="tl">
+        <div class="tli"><div class="tl-dot"></div><div class="tl-c"><div class="tl-act" style="font-size:12px">💬 <strong>WhatsApp:</strong> "Thursday 3PM works for me."</div><div class="tl-m">Arjun → You · 5 min ago</div></div></div>
+        <div class="tli"><div class="tl-dot g"></div><div class="tl-c"><div class="tl-act" style="font-size:12px">✉ <strong>Email:</strong> Screening invite sent with JD + interview prep tips</div><div class="tl-m">You → Arjun · Yesterday</div></div></div>
+        <div class="tli"><div class="tl-dot p"></div><div class="tl-c"><div class="tl-act" style="font-size:12px">📞 <strong>Call logged:</strong> 22 min call. Discussed expectations, notice period, remote policy.</div><div class="tl-m">Priya K · 2 days ago</div></div></div>
+      </div>
+    </div>
+
+    <div class="panel-section" id="pt-docs">
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <div class="flex"><span class="age-badge age-ok">✓</span><span style="font-size:12px;margin-left:8px;flex:1">Resume / CV</span><button class="btn btn-g btn-xs" onclick="showToast('Resume opened','i')">View</button></div>
+        <div class="flex"><span class="age-badge age-warn">⏳</span><span style="font-size:12px;margin-left:8px;flex:1;color:var(--muted2)">Offer Letter</span><button class="btn btn-g btn-xs" onclick="showToast('Offer not generated yet','i')">Generate</button></div>
+        <div class="flex"><span class="age-badge age-warn">⏳</span><span style="font-size:12px;margin-left:8px;flex:1;color:var(--muted2)">Payslips (3 months)</span><button class="btn btn-g btn-xs" onclick="showToast('Reminder sent','s')">Remind</button></div>
+        <div class="flex"><span class="age-badge age-warn">⏳</span><span style="font-size:12px;margin-left:8px;flex:1;color:var(--muted2)">Experience Letters</span><button class="btn btn-g btn-xs" onclick="showToast('Reminder sent','s')">Remind</button></div>
+      </div>
+      <button class="btn btn-g btn-sm" style="margin-top:12px;width:100%" onclick="showToast('Document request email sent','s')">📤 Request All Pending Docs</button>
+    </div>
+  </div>
+</div>
+
+<!-- CLIENT PANEL -->
+<div class="panel" id="clientPanel">
+  <div class="panel-hd">
+    <div class="av" style="width:38px;height:38px;font-size:13px;background:linear-gradient(135deg,#4f7cff,#00d4a8);flex-shrink:0">TC</div>
+    <div style="flex:1"><div class="panel-title">TechCorp India</div><div style="font-size:11.5px;color:var(--muted)">IT Products · Bangalore · Active Client</div></div>
+    <button class="close-btn" onclick="closePanel('clientPanel')">✕</button>
+  </div>
+  <div class="panel-body">
+    <div class="panel-tabs">
+      <button class="pt active" onclick="switchPT(this,'cl-overview')">Overview</button>
+      <button class="pt" onclick="switchPT(this,'cl-history')">Contact History</button>
+      <button class="pt" onclick="switchPT(this,'cl-docs')">Docs & MSA</button>
+    </div>
+    <div class="panel-section active" id="cl-overview">
+      <div class="info-grid">
+        <div class="ii"><div class="ii-l">Primary Contact</div><div class="ii-v">Sneha Kapoor</div></div>
+        <div class="ii"><div class="ii-l">Title</div><div class="ii-v">VP Engineering</div></div>
+        <div class="ii"><div class="ii-l">Email</div><div class="ii-v text-a1" style="font-size:11.5px">sneha@techcorp.in</div></div>
+        <div class="ii"><div class="ii-l">Phone</div><div class="ii-v" style="font-size:12px">+91-98200-12345</div></div>
+        <div class="ii"><div class="ii-l">Open Roles</div><div class="ii-v text-a1">4</div></div>
+        <div class="ii"><div class="ii-l">Revenue (YTD)</div><div class="ii-v text-a2">₹14L</div></div>
+        <div class="ii"><div class="ii-l">Client Since</div><div class="ii-v">Jan 2025</div></div>
+        <div class="ii"><div class="ii-l">MSA Status</div><div class="ii-v"><span class="pill p-active">Signed</span></div></div>
+      </div>
+      <div class="divider"></div>
+      <div class="s-title">Revenue Trend</div>
+      <div class="bar-chart" style="height:70px">
+        <div class="bg"><div class="b g" style="height:40%"></div><div class="b-l">Q2 25</div><div class="b-v">₹3L</div></div>
+        <div class="bg"><div class="b g" style="height:70%"></div><div class="b-l">Q3 25</div><div class="b-v">₹5L</div></div>
+        <div class="bg"><div class="b g" style="height:85%"></div><div class="b-l">Q4 25</div><div class="b-v">₹6L</div></div>
+        <div class="bg"><div class="b" style="height:100%"></div><div class="b-l">Q1 26</div><div class="b-v">₹14L</div></div>
+      </div>
+    </div>
+    <div class="panel-section" id="cl-history">
+      <div class="s-title">Contact History</div>
+      <div class="tl">
+        <div class="tli"><div class="tl-dot g"></div><div class="tl-c"><div class="tl-act">📧 Email: Sneha requesting 2 React Dev profiles for new project</div><div class="tl-m">Today, 11:30 AM · Priya K</div></div></div>
+        <div class="tli"><div class="tl-dot"></div><div class="tl-c"><div class="tl-act">📞 Call: 18min — Discussed Q2 hiring plan, 4 new roles expected</div><div class="tl-m">2 days ago · Rahul S</div></div></div>
+        <div class="tli"><div class="tl-dot p"></div><div class="tl-c"><div class="tl-act">📅 Meeting: Quarterly business review — positive feedback, renewal confirmed</div><div class="tl-m">2 weeks ago · Rahul S</div></div></div>
+        <div class="tli"><div class="tl-dot y"></div><div class="tl-c"><div class="tl-act">📝 Note: Sneha mentioned budget freeze on Backend roles until April</div><div class="tl-m">3 weeks ago · You</div></div></div>
+      </div>
+    </div>
+    <div class="panel-section" id="cl-docs">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="flex"><span class="age-badge age-ok">✓</span><span style="font-size:12px;margin-left:8px;flex:1">Master Service Agreement (MSA)</span><button class="btn btn-g btn-xs" onclick="showToast('MSA opened','i')">View</button></div>
+        <div class="flex"><span class="age-badge age-ok">✓</span><span style="font-size:12px;margin-left:8px;flex:1">SLA Agreement · 7-day shortlist SLA</span><button class="btn btn-g btn-xs" onclick="showToast('SLA opened','i')">View</button></div>
+        <div class="flex"><span class="age-badge age-ok">✓</span><span style="font-size:12px;margin-left:8px;flex:1">NDA — Signed Mar 2025</span><button class="btn btn-g btn-xs" onclick="showToast('NDA opened','i')">View</button></div>
+        <div class="flex"><span class="age-badge age-warn">⏳</span><span style="font-size:12px;margin-left:8px;flex:1;color:var(--muted2)">MSA Renewal (due Jun 2026)</span><button class="btn btn-p btn-xs" onclick="showToast('Renewal reminder set','s')">Remind</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ MODALS ════════════ -->
+<!-- Quick Add -->
+<div class="overlay" id="quickAdd">
+  <div class="modal" style="width:420px">
+    <div class="m-hd"><div class="m-title">Quick Add</div><button class="close-btn" onclick="closeModal('quickAdd')">✕</button></div>
+    <div class="m-body" style="display:flex;flex-direction:column;gap:8px;padding:16px 22px 22px">
+      <button class="btn btn-g" style="justify-content:flex-start;gap:12px;padding:13px 16px" onclick="closeModal('quickAdd');openModal('addCand')"><span style="font-size:18px">◎</span><div style="text-align:left"><div style="font-size:13px;font-weight:700">Add Candidate</div><div style="font-size:11px;color:var(--muted)">Source to your talent pool</div></div></button>
+      <button class="btn btn-g" style="justify-content:flex-start;gap:12px;padding:13px 16px" onclick="closeModal('quickAdd');openModal('addJob')"><span style="font-size:18px">◈</span><div style="text-align:left"><div style="font-size:13px;font-weight:700">New Job Order</div><div style="font-size:11px;color:var(--muted)">Create open requisition</div></div></button>
+      <button class="btn btn-g" style="justify-content:flex-start;gap:12px;padding:13px 16px" onclick="closeModal('quickAdd');openModal('addClient')"><span style="font-size:18px">⬜</span><div style="text-align:left"><div style="font-size:13px;font-weight:700">Add Client</div><div style="font-size:11px;color:var(--muted)">Onboard a client company</div></div></button>
+      <button class="btn btn-g" style="justify-content:flex-start;gap:12px;padding:13px 16px" onclick="closeModal('quickAdd');openModal('addDeal')"><span style="font-size:18px">◇</span><div style="text-align:left"><div style="font-size:13px;font-weight:700">New Deal</div><div style="font-size:11px;color:var(--muted)">Track a BD opportunity</div></div></button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Candidate -->
+<div class="overlay" id="addCand">
+  <div class="modal">
+    <div class="m-hd"><div class="m-title">Add New Candidate</div><button class="close-btn" onclick="closeModal('addCand')">✕</button></div>
+    <div class="m-body">
+      <div class="fr"><div class="fg"><label class="fl">First Name *</label><input class="fi" placeholder="e.g. Arjun"/></div><div class="fg"><label class="fl">Last Name *</label><input class="fi" placeholder="e.g. Mehta"/></div></div>
+      <div class="fr"><div class="fg"><label class="fl">Email *</label><input class="fi" type="email" placeholder="arjun@email.com"/></div><div class="fg"><label class="fl">Phone</label><input class="fi" placeholder="+91-98XXXXXXXX"/></div></div>
+      <div class="fr"><div class="fg"><label class="fl">Current Role *</label><input class="fi" placeholder="e.g. Senior React Developer"/></div><div class="fg"><label class="fl">Experience (years)</label><input class="fi" type="number" placeholder="5"/></div></div>
+      <div class="fr"><div class="fg"><label class="fl">Current CTC (LPA)</label><input class="fi" placeholder="20"/></div><div class="fg"><label class="fl">Expected CTC</label><input class="fi" placeholder="26"/></div></div>
+      <div class="fr"><div class="fg"><label class="fl">Engagement Type *</label><select class="fi"><option>Full-time</option><option>Contract</option><option>C2H</option><option>Freelance</option></select></div><div class="fg"><label class="fl">Notice Period</label><select class="fi"><option>Immediate</option><option>15 days</option><option>30 days</option><option>60 days</option><option>90 days</option></select></div></div>
+      <div class="fr full"><div class="fg"><label class="fl">Primary Skills (comma separated)</label><input class="fi" placeholder="React, Node.js, TypeScript, MongoDB"/></div></div>
+      <div class="fr"><div class="fg"><label class="fl">Source</label><select class="fi"><option>LinkedIn</option><option>Naukri</option><option>Referral</option><option>Indeed</option><option>Direct</option><option>IIM Jobs</option></select></div><div class="fg"><label class="fl">Pipeline Stage</label><select class="fi"><option>Sourced</option><option>Screening</option><option>Submitted</option><option>Interview</option><option>Offer</option></select></div></div>
+      <div class="fr"><div class="fg"><label class="fl">Assign to Recruiter</label><select class="fi"><option>Priya K</option><option>Deepak S</option><option>Rahul S (You)</option></select></div><div class="fg"><label class="fl">Location</label><input class="fi" placeholder="e.g. Bangalore"/></div></div>
+      <div class="fr full"><div class="fg"><label class="fl">Notes</label><textarea class="fi" placeholder="Initial impressions, key highlights, any caveats…"></textarea></div></div>
+    </div>
+    <div class="m-foot"><button class="btn btn-g" onclick="closeModal('addCand')">Cancel</button><button class="btn btn-p" onclick="saveCand()">Save Candidate</button></div>
+  </div>
+</div>
+
+<!-- Add Job -->
+<div class="overlay" id="addJob">
+  <div class="modal">
+    <div class="m-hd"><div class="m-title">New Job Order</div><button class="close-btn" onclick="closeModal('addJob')">✕</button></div>
+    <div class="m-body">
+      <div class="fr full"><div class="fg"><label class="fl">Job Title *</label><input class="fi" placeholder="e.g. Senior Java Developer"/></div></div>
+      <div class="fr"><div class="fg"><label class="fl">Client *</label><select class="fi"><option>TechCorp India</option><option>HCL Technologies</option><option>Wipro Enterprise</option><option>FinEdge Solutions</option></select></div><div class="fg"><label class="fl">Hiring Manager</label><input class="fi" placeholder="Contact name"/></div></div>
+      <div class="fr"><div class="fg"><label class="fl">Location</label><input class="fi" placeholder="e.g. Bangalore (Hybrid)"/></div><div class="fg"><label class="fl">Engagement Type *</label><select class="fi"><option>Full-time</option><option>Contract</option><option>C2H</option></select></div></div>
+      <div class="fr"><div class="fg"><label class="fl">Budget / Rate</label><input class="fi" placeholder="₹28–35L or ₹90K/mo"/></div><div class="fg"><label class="fl">Priority</label><select class="fi"><option>Normal</option><option>High</option><option>Urgent</option></select></div></div>
+      <div class="fr full"><div class="fg"><label class="fl">Required Skills *</label><input class="fi" placeholder="Java, Spring Boot, Kafka, Microservices"/></div></div>
+      <div class="fr"><div class="fg"><label class="fl">Min Experience (yrs)</label><input class="fi" type="number" placeholder="4"/></div><div class="fg"><label class="fl">No. of Openings</label><input class="fi" type="number" placeholder="1"/></div></div>
+      <div class="fr"><div class="fg"><label class="fl">SLA (days to shortlist)</label><input class="fi" type="number" placeholder="7"/></div><div class="fg"><label class="fl">Assign to Recruiter</label><select class="fi"><option>Priya K</option><option>Deepak S</option><option>Rahul S (You)</option></select></div></div>
+      <div class="fr full"><div class="fg"><label class="fl">Job Description</label><textarea class="fi" style="min-height:90px" placeholder="Role overview, responsibilities, qualifications…"></textarea></div></div>
+    </div>
+    <div class="m-foot"><button class="btn btn-g" onclick="closeModal('addJob')">Cancel</button><button class="btn btn-p" onclick="saveJob()">Create Job Order</button></div>
+  </div>
+</div>
+
+<!-- Add Client -->
+<div class="overlay" id="addClient">
+  <div class="modal">
+    <div class="m-hd"><div class="m-title">Add New Client</div><button class="close-btn" onclick="closeModal('addClient')">✕</button></div>
+    <div class="m-body">
+      <div class="fr full"><div class="fg"><label class="fl">Company Name *</label><input class="fi" placeholder="e.g. Infosys BPO"/></div></div>
+      <div class="fr"><div class="fg"><label class="fl">Industry</label><select class="fi"><option>IT Services</option><option>IT Products / SaaS</option><option>BFSI / Fintech</option><option>E-Commerce</option><option>Engineering</option></select></div><div class="fg"><label class="fl">Company Size</label><select class="fi"><option>Startup (&lt;50)</option><option>SMB (50–500)</option><option>Mid-market</option><option>Enterprise (5K+)</option></select></div></div>
+      <div class="fr"><div class="fg"><label class="fl">Primary Contact *</label><input class="fi" placeholder="Full name"/></div><div class="fg"><label class="fl">Title</label><input class="fi" placeholder="VP Engineering"/></div></div>
+      <div class="fr"><div class="fg"><label class="fl">Email *</label><input class="fi" type="email"/></div><div class="fg"><label class="fl">Phone</label><input class="fi"/></div></div>
+      <div class="fr"><div class="fg"><label class="fl">SLA (days to shortlist)</label><input class="fi" type="number" placeholder="7"/></div><div class="fg"><label class="fl">Status</label><select class="fi"><option>Prospect</option><option>Active</option><option>On Hold</option></select></div></div>
+      <div class="fr full"><div class="fg"><label class="fl">Notes</label><textarea class="fi" placeholder="Source, key requirements, special terms…"></textarea></div></div>
+    </div>
+    <div class="m-foot"><button class="btn btn-g" onclick="closeModal('addClient')">Cancel</button><button class="btn btn-p" onclick="saveClient()">Save Client</button></div>
+  </div>
+</div>
+
+<!-- Add Deal -->
+<div class="overlay" id="addDeal">
+  <div class="modal">
+    <div class="m-hd"><div class="m-title">New Deal</div><button class="close-btn" onclick="closeModal('addDeal')">✕</button></div>
+    <div class="m-body">
+      <div class="fr full"><div class="fg"><label class="fl">Deal Name *</label><input class="fi" placeholder="e.g. TechCorp MSA 2026"/></div></div>
+      <div class="fr"><div class="fg"><label class="fl">Client *</label><select class="fi"><option>TechCorp India</option><option>HCL Technologies</option><option>Wipro Enterprise</option><option>FinEdge Solutions</option></select></div><div class="fg"><label class="fl">Deal Type</label><select class="fi"><option>Retainer</option><option>MSA</option><option>Project-Based</option><option>Transactional</option></select></div></div>
+      <div class="fr"><div class="fg"><label class="fl">Estimated Value (₹)</label><input class="fi" placeholder="1200000"/></div><div class="fg"><label class="fl">Close Date</label><input class="fi" type="date"/></div></div>
+      <div class="fr"><div class="fg"><label class="fl">Stage</label><select class="fi"><option>Lead</option><option>Qualified</option><option>Proposal Sent</option><option>Negotiation</option><option>Won</option></select></div><div class="fg"><label class="fl">Owner</label><select class="fi"><option>Rahul S (You)</option><option>Priya K</option><option>Deepak S</option></select></div></div>
+      <div class="fr full"><div class="fg"><label class="fl">Notes</label><textarea class="fi" placeholder="Key details, stakeholders, next steps…"></textarea></div></div>
+    </div>
+    <div class="m-foot"><button class="btn btn-g" onclick="closeModal('addDeal')">Cancel</button><button class="btn btn-p" onclick="saveDeal()">Save Deal</button></div>
+  </div>
+</div>
+
+<!-- Add Contact -->
+<div class="overlay" id="addContact">
+  <div class="modal">
+    <div class="m-hd"><div class="m-title">Add Contact</div><button class="close-btn" onclick="closeModal('addContact')">✕</button></div>
+    <div class="m-body">
+      <div class="fr"><div class="fg"><label class="fl">First Name *</label><input class="fi" placeholder="First"/></div><div class="fg"><label class="fl">Last Name *</label><input class="fi" placeholder="Last"/></div></div>
+      <div class="fr"><div class="fg"><label class="fl">Email *</label><input class="fi" type="email"/></div><div class="fg"><label class="fl">Phone</label><input class="fi"/></div></div>
+      <div class="fr"><div class="fg"><label class="fl">Company</label><select class="fi"><option>TechCorp India</option><option>HCL Technologies</option><option>Wipro Enterprise</option><option>FinEdge Solutions</option></select></div><div class="fg"><label class="fl">Title</label><input class="fi" placeholder="VP Talent"/></div></div>
+    </div>
+    <div class="m-foot"><button class="btn btn-g" onclick="closeModal('addContact')">Cancel</button><button class="btn btn-p" onclick="saveContact()">Save Contact</button></div>
+  </div>
+</div>
+
+<!-- Generate Offer -->
+<div class="overlay" id="genOffer">
+  <div class="modal">
+    <div class="m-hd"><div class="m-title">Generate Offer Letter</div><button class="close-btn" onclick="closeModal('genOffer')">✕</button></div>
+    <div class="m-body">
+      <div class="fr"><div class="fg"><label class="fl">Candidate *</label><select class="fi"><option>Anita Roy</option><option>Arjun Mehta</option><option>Vijay Kumar</option></select></div><div class="fg"><label class="fl">Client *</label><select class="fi"><option>TCS Digital</option><option>TechCorp India</option><option>HCL Technologies</option></select></div></div>
+      <div class="fr"><div class="fg"><label class="fl">Offered CTC (LPA)</label><input class="fi" placeholder="30"/></div><div class="fg"><label class="fl">Joining Date</label><input class="fi" type="date"/></div></div>
+      <div class="fr"><div class="fg"><label class="fl">Role Title</label><input class="fi" placeholder="Full Stack Developer"/></div><div class="fg"><label class="fl">Offer Template</label><select class="fi"><option>Standard Full-time</option><option>Contract Engagement</option><option>C2H Template</option></select></div></div>
+      <div class="fr full"><div class="fg"><label class="fl">Additional Terms / Notes</label><textarea class="fi" placeholder="Stock options, remote days, signing bonus…"></textarea></div></div>
+    </div>
+    <div class="m-foot"><button class="btn btn-g" onclick="closeModal('genOffer')">Cancel</button><button class="btn btn-p" onclick="closeModal('genOffer');showToast('Offer letter generated and sent via email + DocuSign','s')">Generate & Send</button></div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-c" id="toastC"></div>
+<div id="backdrop" onclick="closeAllPanels()"></div>
+
+<script>
+// ── Navigation ──
+const pageTitles = {dashboard:'Dashboard',pipeline:'ATS / Deal Pipeline',candidates:'Candidates',jobs:'Job Orders',ai:'AI Matching Engine',clients:'Clients',deals:'Deals',contacts:'Contacts',comms:'Communications',offers:'Offer & Documents',workflows:'Workflows & Automations',analytics:'Analytics',recruiter:'Recruiter KPIs',rbac:'Roles & Access',audit:'Audit Log'};
+function nav(p,el){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  el.classList.add('active');
+  document.getElementById('pageTitle').textContent=pageTitles[p]||p;
+}
+
+// ── Kanban Tab ──
+function switchKB(t,btn){
+  document.querySelectorAll('.tabs .tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('ats-kb').style.display=t==='ats'?'flex':'none';
+  document.getElementById('deals-kb').style.display=t==='deals'?'flex':'none';
+}
+
+// ── Drag & Drop ──
+let drag=null;
+function dst(e,c){drag=c;c.classList.add('dragging');e.dataTransfer.effectAllowed='move'}
+function dov(e,col){e.preventDefault();document.querySelectorAll('.kb-col').forEach(c=>c.classList.remove('drag-over'));col.classList.add('drag-over')}
+function ddr(e,col){e.preventDefault();if(drag){col.querySelector('.col-cards').appendChild(drag);drag.classList.remove('dragging');updateCounts();showToast('Stage updated ✓','s');drag=null}col.classList.remove('drag-over')}
+document.addEventListener('dragend',()=>{if(drag)drag.classList.remove('dragging');document.querySelectorAll('.kb-col').forEach(c=>c.classList.remove('drag-over'))});
+function updateCounts(){document.querySelectorAll('.kb-col').forEach(col=>{const cnt=col.querySelectorAll('.k-card').length;const ct=col.querySelector('.col-ct');if(ct)ct.textContent=cnt})}
+
+// ── Modals ──
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open')}));
+
+// ── Panels ──
+function openCandPanel(c){document.getElementById('candPanel').classList.add('open');document.getElementById('backdrop').style.display='block'}
+function openCandDetail(){document.getElementById('candPanel').classList.add('open');document.getElementById('backdrop').style.display='block'}
+function openClientPanel(){document.getElementById('clientPanel').classList.add('open');document.getElementById('backdrop').style.display='block'}
+function closePanel(id){document.getElementById(id).classList.remove('open');document.getElementById('backdrop').style.display='none'}
+function closeAllPanels(){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('open'));document.getElementById('backdrop').style.display='none'}
+
+// ── Panel Tabs ──
+function switchPT(btn,section){
+  const panel=btn.closest('.panel-body')||btn.closest('.modal');
+  const tabs=btn.closest('.panel-tabs').querySelectorAll('.pt');
+  tabs.forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  const parent=btn.closest('.panel-body');
+  parent.querySelectorAll('.panel-section').forEach(s=>s.classList.remove('active'));
+  document.getElementById(section).classList.add('active');
+}
+
+// ── Save stubs ──
+function saveCand(){closeModal('addCand');showToast('Candidate added & AI match running…','s')}
+function saveJob(){closeModal('addJob');showToast('Job order created · AI matching started','s')}
+function saveClient(){closeModal('addClient');showToast('Client added to CRM','s')}
+function saveDeal(){closeModal('addDeal');showToast('Deal created in pipeline','s')}
+function saveContact(){closeModal('addContact');showToast('Contact saved','s')}
+
+// ── Notifications ──
+function toggleNotif(){const p=document.getElementById('notifPanel');p.classList.toggle('open')}
+document.addEventListener('click',e=>{const btn=document.getElementById('notifBtn');const panel=document.getElementById('notifPanel');if(!btn.contains(e.target)&&!panel.contains(e.target))panel.classList.remove('open')});
+
+// ── Workflow toggle ──
+function toggleWF(el){el.classList.toggle('on');showToast(el.classList.contains('on')?'Workflow enabled':'Workflow disabled','s')}
+
+// ── Converation select ──
+function selectConv(el){document.querySelectorAll('.conv-item').forEach(c=>c.classList.remove('active'));el.classList.add('active');const dot=el.querySelector('.unread-dot');if(dot)dot.remove()}
+
+// ── Toast ──
+function showToast(msg,type='i'){
+  const c=document.getElementById('toastC');
+  const t=document.createElement('div');
+  t.className=`toast ${type}`;
+  const icons={'s':'<span style="color:var(--a2)">✓</span>','e':'<span style="color:var(--danger)">✕</span>','i':'<span style="color:var(--a1)">✦</span>'};
+  t.innerHTML=`<span class="toast-ic">${icons[type]||icons.i}</span><span>${msg}</span>`;
+  c.appendChild(t);
+  setTimeout(()=>{t.style.cssText='opacity:0;transform:translateX(20px);transition:all .2s';setTimeout(()=>t.remove(),200)},3000);
+}
+
+// ── Keyboard ──
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){document.querySelectorAll('.overlay.open').forEach(o=>o.classList.remove('open'));closeAllPanels()}
+  if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();document.getElementById('searchInput').focus()}
+});
+
+// ── Init ──
+setTimeout(()=>showToast('Welcome back, Rahul! 3 SLA alerts need attention.','i'),600);
+setTimeout(()=>showToast('✦ AI: Vijay Kumar matches Cloud Architect role at 92%','s'),1800);
+</script>
+</body>
+</html>
+
